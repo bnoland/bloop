@@ -10,6 +10,9 @@ if get_option('buildtype') == 'debug'
   add_project_arguments('-DDEBUG', language: ['c'])
 endif
 
+cc = meson.get_compiler('c')
+m_dep = cc.find_library('m', required: false)
+
 sdl2_dep = dependency('sdl2')
 
 subdir('resources')
@@ -19,7 +22,9 @@ executable(
   sources: [
     'src/main.c',
     'src/graphics.c',
+    'src/vector.c',
+    'src/matrix.c',
   ],
-  dependencies: [sdl2_dep],
+  dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],
 )
