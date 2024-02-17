@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "model.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -34,6 +35,10 @@ int main(void)
     fprintf(stderr, "Failed to create screen texture: %s\n", SDL_GetError());
     return EXIT_FAILURE;
   }
+
+  Model model;
+  model_load(&model, "resources/suzanne.obj");
+  model_free(&model);
 
   initialize_graphics();
 

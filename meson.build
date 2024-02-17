@@ -24,6 +24,8 @@ executable(
     'src/graphics.c',
     'src/vector.c',
     'src/matrix.c',
+    'src/mesh.c',
+    'src/model.c',
   ],
   dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],
