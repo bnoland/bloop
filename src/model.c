@@ -15,9 +15,9 @@ void model_init(Model* model)
   dyn_list_initialize(&model->normals, sizeof(Vec3));
 }
 
-bool model_load(Model* model, const char* path)
+bool model_load(Model* model, const char* path, bool initialize)
 {
-  model_init(model);
+  if (initialize) model_init(model);
 
   FILE* input = fopen(path, "r");
   if (input == NULL) {
@@ -33,30 +33,41 @@ bool model_load(Model* model, const char* path)
 
     if (line[0] == '#') continue;  // Comment
 
-    if (line[0] == 'v') {
-      if (line[1] == ' ') {  // Vertex position
-        Vec3 vertex;
-        if (sscanf(&line[2], "%f %f %f", &vertex.x, &vertex.y, &vertex.z) != 3) {
-          fprintf(stderr, "Failed to read vertex position: %s, line %zu\n", path, line_number);
-          return false;
-        }
-        dyn_list_add(&model->vertices, &vertex);
-      } else if (line[1] == 'n') {  // Vertex normal
-        Vec3 normal;
-        if (sscanf(&line[2], "%f %f %f", &normal.x, &normal.y, &normal.z) != 3) {
-          fprintf(stderr, "Failed to read vertex normal: %s, line %zu\n", path, line_number);
-          return false;
-        }
-        dyn_list_add(&model->normals, &normal);
-      } else if (line[1] == 't') {  // Texture coordinate
-        Vec2 uv;
-        if (sscanf(&line[2], "%f %f", &uv.x, &uv.y) != 2) {
-          fprintf(stderr, "Failed to read texture coordinate: %s, line %zu\n", path, line_number);
-          return false;
-        }
-        dyn_list_add(&model->uvs, &uv);
+    // Vertex position
+    if (strncmp(line, "v ", 2) == 0) {
+      Vec3 vertex;
+      if (sscanf(&line[2], "%f %f %f", &vertex.x, &vertex.y, &vertex.z) != 3) {
+        fprintf(stderr, "Failed to read vertex position: %s, line %zu\n", path, line_number);
+        return false;
       }
-    } else if (line[0] == 'f') {  // Face
+      dyn_list_add(&model->vertices, &vertex);
+      continue;
+    }
+
+    // Texture coordinate
+    if (strncmp(line, "vt ", 3) == 0) {
+      Vec2 uv;
+      if (sscanf(&line[2], "%f %f", &uv.x, &uv.y) != 2) {
+        fprintf(stderr, "Failed to read texture coordinate: %s, line %zu\n", path, line_number);
+        return false;
+      }
+      dyn_list_add(&model->uvs, &uv);
+      continue;
+    }
+
+    // Vertex normal
+    if (strncmp(line, "vn ", 3) == 0) {
+      Vec3 normal;
+      if (sscanf(&line[2], "%f %f %f", &normal.x, &normal.y, &normal.z) != 3) {
+        fprintf(stderr, "Failed to read vertex normal: %s, line %zu\n", path, line_number);
+        return false;
+      }
+      dyn_list_add(&model->normals, &normal);
+      continue;
+    }
+
+    // Face
+    if (strncmp(line, "f ", 2) == 0) {
       char elem_strs[3][sizeof(line)];
       if (sscanf(&line[2], "%s %s %s", elem_strs[0], elem_strs[1], elem_strs[2]) != 3) {
         fprintf(stderr, "Failed to read face elements: %s, line %zu\n", path, line_number);
@@ -98,6 +109,7 @@ bool model_load(Model* model, const char* path)
       }
 
       dyn_list_add(&model->faces, &face);
+      continue;
     }
   }
 

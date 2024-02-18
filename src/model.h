@@ -28,7 +28,7 @@ typedef struct
   DynList normals;
 } Model;
 
-bool model_load(Model* model, const char* path);
+bool model_load(Model* model, const char* path, bool initialize);
 void model_init(Model* model);
 void model_free(Model* model);
 
