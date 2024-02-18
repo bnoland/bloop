@@ -37,7 +37,7 @@ int main(void)
   }
 
   Model model;
-  model_load(&model, "resources/suzanne.obj");
+  model_load(&model, "resources/teapot.obj");
   model_free(&model);
 
   initialize_graphics();

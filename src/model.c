@@ -1,6 +1,7 @@
 #include "model.h"
 
 #include "vector.h"
+#include "utility.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,32 +66,34 @@ bool model_load(Model* model, const char* path)
       Face face;
 
       for (size_t i = 0; i < 3; i++) {
-        char* src = elem_strs[i];
+        char* ptr = elem_strs[i];
 
-        for (size_t j = 0; j < 3; j++) {
-          char idx_str[sizeof(elem_strs[i])];
-          char* dest = idx_str;
-          if (*src == '/') src++;
-          while (*src != '\0' && *src != '/') *dest++ = *src++;
-          *dest = '\0';
+        // Read vertex index
+        const char* vertex_idx = strsep(&ptr, "/");
+        if (vertex_idx == NULL) {
+          fprintf(stderr, "Failed to read face vertex index: %s, line %zu\n", path, line_number);
+          return false;
+        }
+        sscanf(vertex_idx, "%zu", &face.elements[i].vertex_index);
 
-          if (j == 0) {
-            sscanf(idx_str, "%zu", &face.elements[i].vertex_index);
-          } else if (j == 1) {
-            if (dest == idx_str) {
-              face.elements[i].has_uv = false;
-            } else {
-              face.elements[i].has_uv = true;
-              sscanf(idx_str, "%zu", &face.elements[i].uv_index);
-            }
-          } else {
-            if (dest == idx_str) {
-              face.elements[i].has_normal = false;
-            } else {
-              face.elements[i].has_normal = true;
-              sscanf(idx_str, "%zu", &face.elements[i].normal_index);
-            }
-          }
+        // Read (optional) texture coordinate index
+        const char* uv_idx = strsep(&ptr, "/");
+        if (uv_idx == NULL || uv_idx[0] == '\0') {
+          face.elements[i].has_uv = false;
+          face.elements[i].uv_index = 0;
+        } else {
+          face.elements[i].has_uv = true;
+          sscanf(uv_idx, "%zu", &face.elements[i].uv_index);
+        }
+
+        // Read (optional) vertex normal index
+        const char* normal_idx = strsep(&ptr, "/");
+        if (normal_idx == NULL || normal_idx[0] == '\0') {
+          face.elements[i].has_normal = false;
+          face.elements[i].normal_index = 0;
+        } else {
+          face.elements[i].has_normal = true;
+          sscanf(normal_idx, "%zu", &face.elements[i].normal_index);
         }
       }
 
