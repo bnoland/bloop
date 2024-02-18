@@ -31,5 +31,9 @@ typedef struct
 bool model_load(Model* model, const char* path, bool initialize);
 void model_init(Model* model);
 void model_free(Model* model);
+// size_t model_num_faces(const Model* model);
+// size_t model_num_vertices(const Model* model);
+// size_t model_num_uvs(const Model* model);
+// size_t model_num_normals(const Model* model);
 
 #endif

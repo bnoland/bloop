@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 void dyn_list_initialize(DynList* list, size_t type_size)
 {
@@ -21,7 +22,7 @@ void dyn_list_free(DynList* list)
   list->type_size = 0;
 }
 
-void dyn_list_add(DynList* list, void* data_ptr)
+void dyn_list_add(DynList* list, const void* data_ptr)
 {
   if (list->size >= list->capacity) {
     const size_t new_capacity = 2 * list->capacity;
@@ -38,6 +39,7 @@ void dyn_list_add(DynList* list, void* data_ptr)
 
 void* dyn_list_at(DynList* list, size_t index)
 {
+  assert(index < list->size);
   const size_t offset = index * list->type_size;
   return list->buffer + offset;
 }

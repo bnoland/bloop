@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include "model.h"
+#include "mesh.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -36,9 +36,9 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  Model model;
-  model_load(&model, "resources/teapot.obj", true);
-  model_free(&model);
+  Mesh mesh;
+  mesh_load_from_file(&mesh, "resources/suzanne.obj", true, true, true);
+  mesh_free(&mesh);
 
   initialize_graphics();
 
