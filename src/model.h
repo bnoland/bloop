@@ -2,6 +2,7 @@
 #define OBJ_H_
 
 #include "vector.h"
+#include "dynlist.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -22,14 +23,10 @@ typedef struct
 
 typedef struct
 {
-  Face* faces;
-  Vec3* vertices;
-  Vec2* uvs;
-  Vec3* normals;
-  size_t num_faces;
-  size_t num_vertices;
-  size_t num_uvs;
-  size_t num_normals;
+  DynList faces;
+  DynList vertices;
+  DynList uvs;
+  DynList normals;
 } Model;
 
 bool model_load(Model* model, const char* path);

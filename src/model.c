@@ -6,24 +6,15 @@
 
 void model_init(Model* model)
 {
-  model->faces = NULL;
-  model->vertices = NULL;
-  model->uvs = NULL;
-  model->normals = NULL;
-  model->num_faces = 0;
-  model->num_vertices = 0;
-  model->num_uvs = 0;
-  model->num_normals = 0;
+  dyn_list_initialize(&model->faces, sizeof(Face));
+  dyn_list_initialize(&model->vertices, sizeof(Vec3));
+  dyn_list_initialize(&model->uvs, sizeof(Vec2));
+  dyn_list_initialize(&model->normals, sizeof(Vec3));
 }
 
 bool model_load(Model* model, const char* path)
 {
   model_init(model);
-
-  size_t max_faces = 0;
-  size_t max_vertices = 0;
-  size_t max_uvs = 0;
-  size_t max_normals = 0;
 
   FILE* input = fopen(path, "r");
   if (input == NULL) {
@@ -46,39 +37,21 @@ bool model_load(Model* model, const char* path)
           fprintf(stderr, "Failed to read vertex position: %s, line %zu\n", path, line_number);
           return false;
         }
-
-        if (model->num_vertices >= max_vertices) {
-          max_vertices = 2 * (max_vertices + 1);
-          model->vertices = (Vec3*)realloc(model->vertices, max_vertices * sizeof(Vec3));
-        }
-
-        model->vertices[model->num_vertices++] = vertex;
+        dyn_list_add(&model->vertices, &vertex);
       } else if (line[1] == 'n') {  // Vertex normal
         Vec3 normal;
         if (sscanf(&line[2], "%f %f %f", &normal.x, &normal.y, &normal.z) != 3) {
           fprintf(stderr, "Failed to read vertex normal: %s, line %zu\n", path, line_number);
           return false;
         }
-
-        if (model->num_normals >= max_normals) {
-          max_normals = 2 * (max_normals + 1);
-          model->normals = (Vec3*)realloc(model->normals, max_normals * sizeof(Vec3));
-        }
-
-        model->normals[model->num_normals++] = normal;
+        dyn_list_add(&model->normals, &normal);
       } else if (line[1] == 't') {  // Texture coordinate
         Vec2 uv;
         if (sscanf(&line[2], "%f %f", &uv.x, &uv.y) != 2) {
           fprintf(stderr, "Failed to read texture coordinate: %s, line %zu\n", path, line_number);
           return false;
         }
-
-        if (model->num_uvs >= max_uvs) {
-          max_uvs = 2 * (max_uvs + 1);
-          model->uvs = (Vec2*)realloc(model->uvs, max_uvs * sizeof(Vec2));
-        }
-
-        model->uvs[model->num_uvs++] = uv;
+        dyn_list_add(&model->uvs, &uv);
       }
     } else if (line[0] == 'f') {  // Face
       char elem_strs[3][sizeof(line)];
@@ -119,12 +92,7 @@ bool model_load(Model* model, const char* path)
         }
       }
 
-      if (model->num_faces >= max_faces) {
-        max_faces = 2 * (max_faces + 1);
-        model->faces = (Face*)realloc(model->faces, max_faces * sizeof(Face));
-      }
-
-      model->faces[model->num_faces++] = face;
+      dyn_list_add(&model->faces, &face);
     }
   }
 
@@ -134,5 +102,8 @@ bool model_load(Model* model, const char* path)
 
 void model_free(Model* model)
 {
-  // XXX: Implement.
+  dyn_list_free(&model->faces);
+  dyn_list_free(&model->vertices);
+  dyn_list_free(&model->uvs);
+  dyn_list_free(&model->normals);
 }
