@@ -133,4 +133,6 @@ bool model_load(Model* model, const char* path)
 }
 
 void model_free(Model* model)
-{}
+{
+  // XXX: Implement.
+}

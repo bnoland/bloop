@@ -26,6 +26,7 @@ executable(
     'src/matrix.c',
     'src/mesh.c',
     'src/model.c',
+    'src/dynlist.c',
   ],
   dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],
