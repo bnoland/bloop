@@ -1,6 +1,5 @@
 #include "graphics.h"
 #include "model.h"
-#include "dynlist.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -36,16 +35,6 @@ int main(void)
     fprintf(stderr, "Failed to create screen texture: %s\n", SDL_GetError());
     return EXIT_FAILURE;
   }
-
-  DynList list;
-  dyn_list_initialize(&list, sizeof(int));
-  int x = 10;
-  dyn_list_add(&list, &x);
-  x = -1;
-  dyn_list_add(&list, &x);
-  x = 2;
-  dyn_list_add(&list, &x);
-  dyn_list_free(&list);
 
   Model model;
   model_load(&model, "resources/suzanne.obj");

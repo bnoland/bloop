@@ -1,7 +1,6 @@
 #ifndef OBJ_H_
 #define OBJ_H_
 
-#include "vector.h"
 #include "dynlist.h"
 
 #include <stdbool.h>
