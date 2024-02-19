@@ -81,27 +81,27 @@ bool model_load(Model* model, const char* path, bool initialize)
         char* ptr = elem_strs[i];
 
         // Read vertex index
-        const char* vertex_idx = strsep(&ptr, "/");
-        if (vertex_idx == NULL) {
+        const char* vertex_index = strsep(&ptr, "/");
+        if (vertex_index == NULL) {
           fprintf(stderr, "Failed to read face vertex index: %s, line %zu\n", path, line_number);
           return false;
         }
-        sscanf(vertex_idx, "%zu", &face.elements[i].vertex_index);
+        sscanf(vertex_index, "%zu", &face.elements[i].vertex_index);
 
         // Read (optional) texture coordinate index
-        const char* uv_idx = strsep(&ptr, "/");
-        if (uv_idx == NULL || uv_idx[0] == '\0') {
+        const char* uv_index = strsep(&ptr, "/");
+        if (uv_index == NULL || uv_index[0] == '\0') {
           face.elements[i].uv_index = 0;
         } else {
-          sscanf(uv_idx, "%zu", &face.elements[i].uv_index);
+          sscanf(uv_index, "%zu", &face.elements[i].uv_index);
         }
 
         // Read (optional) vertex normal index
-        const char* normal_idx = strsep(&ptr, "/");
-        if (normal_idx == NULL || normal_idx[0] == '\0') {
+        const char* normal_index = strsep(&ptr, "/");
+        if (normal_index == NULL || normal_index[0] == '\0') {
           face.elements[i].normal_index = 0;
         } else {
-          sscanf(normal_idx, "%zu", &face.elements[i].normal_index);
+          sscanf(normal_index, "%zu", &face.elements[i].normal_index);
         }
       }
 

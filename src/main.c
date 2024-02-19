@@ -49,7 +49,7 @@ int main(void)
       }
     }
 
-    clear(0xffffffff);
+    clear(0x000000ff);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, g_pixel_buffer, g_screen_width * sizeof(Color));

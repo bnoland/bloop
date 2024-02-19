@@ -32,3 +32,6 @@ void clear(Color color)
     }
   }
 }
+
+void draw_triangle(const Vec3* v0, const Vec3* v1, const Vec3* v2, Color color)
+{}
