@@ -37,7 +37,7 @@ void dyn_list_add(DynList* list, const void* data_ptr)
   list->size++;
 }
 
-void* dyn_list_at(DynList* list, size_t index)
+const void* dyn_list_at(const DynList* list, size_t index)
 {
   assert(index < list->size);
   const size_t offset = index * list->type_size;

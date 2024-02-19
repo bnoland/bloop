@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
-void model_init(Model* model)
+void model_inititalize(Model* model)
 {
   dyn_list_initialize(&model->faces, sizeof(Face));
   dyn_list_initialize(&model->vertices, sizeof(Vec3));
@@ -17,7 +18,7 @@ void model_init(Model* model)
 
 bool model_load(Model* model, const char* path, bool initialize)
 {
-  if (initialize) model_init(model);
+  if (initialize) model_inititalize(model);
 
   FILE* input = fopen(path, "r");
   if (input == NULL) {
@@ -90,20 +91,16 @@ bool model_load(Model* model, const char* path, bool initialize)
         // Read (optional) texture coordinate index
         const char* uv_idx = strsep(&ptr, "/");
         if (uv_idx == NULL || uv_idx[0] == '\0') {
-          face.elements[i].has_uv = false;
           face.elements[i].uv_index = 0;
         } else {
-          face.elements[i].has_uv = true;
           sscanf(uv_idx, "%zu", &face.elements[i].uv_index);
         }
 
         // Read (optional) vertex normal index
         const char* normal_idx = strsep(&ptr, "/");
         if (normal_idx == NULL || normal_idx[0] == '\0') {
-          face.elements[i].has_normal = false;
           face.elements[i].normal_index = 0;
         } else {
-          face.elements[i].has_normal = true;
           sscanf(normal_idx, "%zu", &face.elements[i].normal_index);
         }
       }
@@ -123,4 +120,28 @@ void model_free(Model* model)
   dyn_list_free(&model->vertices);
   dyn_list_free(&model->uvs);
   dyn_list_free(&model->normals);
+}
+
+const Face* model_get_face(const Model* model, size_t index)
+{
+  assert(index < model->faces.size);
+  return (Face*)dyn_list_at(&model->faces, index);
+}
+
+const Vec3* model_get_vertex(const Model* model, size_t index)
+{
+  assert(index < model->vertices.size);
+  return (Vec3*)dyn_list_at(&model->vertices, index);
+}
+
+const Vec2* model_get_uv(const Model* model, size_t index)
+{
+  assert(index < model->uvs.size);
+  return (Vec2*)dyn_list_at(&model->uvs, index);
+}
+
+const Vec3* model_get_normal(const Model* model, size_t index)
+{
+  assert(index < model->normals.size);
+  return (Vec3*)dyn_list_at(&model->normals, index);
 }

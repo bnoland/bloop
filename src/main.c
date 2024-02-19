@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include "mesh.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -35,10 +34,6 @@ int main(void)
     fprintf(stderr, "Failed to create screen texture: %s\n", SDL_GetError());
     return EXIT_FAILURE;
   }
-
-  Mesh mesh;
-  mesh_load_from_file(&mesh, "resources/suzanne.obj", true, true, true);
-  mesh_free(&mesh);
 
   initialize_graphics();
 

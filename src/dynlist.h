@@ -3,9 +3,7 @@
 
 #include <stddef.h>
 
-// XXX: Can we mimic C++ templates using `_Generic` and preprocessor
-// shenanigans?
-// XXX: Rather crude API. Only accepts *pointers* to data.
+// XXX: Can we mimic C++ templates using `_Generic` and preprocessor shenanigans?
 
 typedef struct
 {
@@ -18,6 +16,6 @@ typedef struct
 void dyn_list_initialize(DynList* list, size_t type_size);
 void dyn_list_free(DynList* list);
 void dyn_list_add(DynList* list, const void* data_ptr);
-void* dyn_list_at(DynList* list, size_t index);
+const void* dyn_list_at(const DynList* list, size_t index);
 
 #endif

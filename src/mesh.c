@@ -3,6 +3,8 @@
 #include "vector.h"
 #include "model.h"
 
+#include <stdio.h>
+
 void mesh_initialize(Mesh* mesh)
 {
   dyn_list_initialize(&mesh->vertices, sizeof(Vertex));
@@ -26,44 +28,54 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
   Model model;
   model_load(&model, path, true);
 
-  // XXX: Should maybe abstract the APIs a little...
-
   const size_t num_faces = model.faces.size;
   for (size_t i = 0; i < num_faces; i++) {
-    const Face* face = (Face*)dyn_list_at(&model.faces, i);
+    const Face* face = model_get_face(&model, i);
+
     for (size_t j = 0; j < 3; j++) {
       Vertex vertex;
+
       // Model indices are 1-based, hence the -1.
       vertex.pos_index = face->elements[j].vertex_index - 1;
+
       if (load_uvs) {
-        vertex.uv_index = face->elements[j].uv_index - 1;
+        const size_t uv_index = face->elements[j].uv_index;
+        if (uv_index == 0) {
+          fprintf(stderr, "Encountered vertex with missing texture coordinate.\n");
+          return false;
+        }
+        vertex.uv_index = uv_index - 1;
       }
+
       if (load_normals) {
-        vertex.normal_index = face->elements[j].normal_index - 1;
+        const size_t normal_index = face->elements[j].normal_index;
+        if (normal_index == 0) {
+          fprintf(stderr, "Encountered vertex with missing normal.\n");
+          return false;
+        }
+        vertex.normal_index = normal_index - 1;
       }
+
       dyn_list_add(&mesh->vertices, &vertex);
     }
   }
 
   const size_t num_vertices = model.vertices.size;
   for (size_t i = 0; i < num_vertices; i++) {
-    const Vec3* position = (Vec3*)dyn_list_at(&model.vertices, i);
-    dyn_list_add(&mesh->positions, position);
+    dyn_list_add(&mesh->positions, model_get_vertex(&model, i));
   }
 
   if (load_uvs) {
     const size_t num_uvs = model.uvs.size;
     for (size_t i = 0; i < num_uvs; i++) {
-      const Vec2* uv = (Vec2*)dyn_list_at(&model.uvs, i);
-      dyn_list_add(&mesh->uvs, uv);
+      dyn_list_add(&mesh->uvs, model_get_uv(&model, i));
     }
   }
 
   if (load_normals) {
     const size_t num_normals = model.normals.size;
     for (size_t i = 0; i < num_normals; i++) {
-      const Vec3* normal = (Vec3*)dyn_list_at(&model.normals, i);
-      dyn_list_add(&mesh->normals, normal);
+      dyn_list_add(&mesh->normals, model_get_normal(&model, i));
     }
   }
 
