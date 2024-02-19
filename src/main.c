@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "vector.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -50,6 +51,15 @@ int main(void)
     }
 
     clear(0x000000ff);
+
+    const Vec3 t0[] = { { .x = 10, .y = 70 }, { .x = 50, .y = 160 }, { .x = 70, .y = 80 } };
+    const Vec3 t1[] = { { .x = 180, .y = 50 }, { .x = 150, .y = 1 }, { .x = 70, .y = 180 } };
+    const Vec3 t2[] = { { .x = 180, .y = 150 }, { .x = 120, .y = 160 }, { .x = 130, .y = 180 } };
+    const Vec3 t3[] = { { .x = 200, .y = 200 }, { .x = 200, .y = 300 }, { .x = 300, .y = 200 } };
+    draw_triangle(&t0[0], &t0[1], &t0[2], 0xff0000ff);
+    draw_triangle(&t1[0], &t1[1], &t1[2], 0xffffffff);
+    draw_triangle(&t2[0], &t2[1], &t2[2], 0x00ff00ff);
+    draw_triangle(&t3[0], &t3[1], &t3[2], 0x0000ffff);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, g_pixel_buffer, g_screen_width * sizeof(Color));

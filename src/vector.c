@@ -44,6 +44,20 @@ void vec3_mul(Vec3* dest, const Vec3* v, float c)
   dest->z = v->z * c;
 }
 
+void vec3_mul_add(Vec3* dest, const Vec3* v, const Vec3* w, float c)
+{
+  dest->x = v->x + c * w->x;
+  dest->y = v->y + c * w->y;
+  dest->z = v->z + c * w->z;
+}
+
+void vec3_interpolate(Vec3* dest, const Vec3* v, const Vec3* w, float alpha)
+{
+  dest->x = (1.0f - alpha) * v->x + alpha * w->x;
+  dest->y = (1.0f - alpha) * v->y + alpha * w->y;
+  dest->z = (1.0f - alpha) * v->z + alpha * w->z;
+}
+
 float vec3_dot(const Vec3* v, const Vec3* w)
 {
   return v->x * w->x + v->y * w->y + v->z * w->z;

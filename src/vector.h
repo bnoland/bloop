@@ -36,6 +36,8 @@ typedef struct
 void vec3_add(Vec3* dest, const Vec3* v, const Vec3* w);
 void vec3_sub(Vec3* dest, const Vec3* v, const Vec3* w);
 void vec3_mul(Vec3* dest, const Vec3* v, float c);
+void vec3_mul_add(Vec3* dest, const Vec3* v, const Vec3* w, float c);
+void vec3_interpolate(Vec3* dest, const Vec3* v, const Vec3* w, float alpha);
 float vec3_dot(const Vec3* v, const Vec3* w);
 
 typedef struct
