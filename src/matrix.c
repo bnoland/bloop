@@ -2,7 +2,7 @@
 
 #include "utility.h"
 
-#include <math.h>
+#include <tgmath.h>
 
 void mat3_zero(Mat3* dest)
 {
@@ -110,8 +110,8 @@ void mat4_rotation_x(Mat4* dest, float angle)
 {
   mat4_identity(dest);
 
-  const double cos_angle = cosf(angle);
-  const double sin_angle = sinf(angle);
+  const double cos_angle = cos(angle);
+  const double sin_angle = sin(angle);
 
   dest->elements[1][1] = cos_angle;
   dest->elements[1][2] = -sin_angle;
@@ -123,8 +123,8 @@ void mat4_rotation_y(Mat4* dest, float angle)
 {
   mat4_identity(dest);
 
-  const double cos_angle = cosf(angle);
-  const double sin_angle = sinf(angle);
+  const double cos_angle = cos(angle);
+  const double sin_angle = sin(angle);
 
   dest->elements[0][0] = cos_angle;
   dest->elements[0][3] = sin_angle;
@@ -136,8 +136,8 @@ void mat4_rotation_z(Mat4* dest, float angle)
 {
   mat4_identity(dest);
 
-  const double cos_angle = cosf(angle);
-  const double sin_angle = sinf(angle);
+  const double cos_angle = cos(angle);
+  const double sin_angle = sin(angle);
 
   dest->elements[0][0] = cos_angle;
   dest->elements[0][1] = -sin_angle;
