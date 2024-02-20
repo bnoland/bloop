@@ -1,49 +1,54 @@
 #include "graphics.h"
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <tgmath.h>
 
-const int g_screen_width = 800;
-const int g_screen_height = 600;
-Color* g_pixel_buffer;
+static void
+graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
+static void
+graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
 
-static void draw_triangle_flat_bottom(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
-static void draw_triangle_flat_top(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
 static void swap(const Vec3** v, const Vec3** w);
 
-void initialize_graphics(void)
+void graphics_initialize(Graphics* graphics, int screen_width, int screen_height)
 {
-  g_pixel_buffer = (Color*)malloc(g_screen_width * g_screen_height * sizeof(Color));
+  graphics->screen_width = screen_width;
+  graphics->screen_height = screen_height;
+  graphics->pixel_buffer = (Color*)malloc(screen_width * screen_height * sizeof(Color));
 }
 
-void deinitialize_graphics(void)
+void graphics_free(Graphics* graphics)
 {
-  free(g_pixel_buffer);
+  free(graphics->pixel_buffer);
+  graphics->pixel_buffer = NULL;
 }
 
-void put_pixel(int x, int y, Color color)
+void graphics_set_pixel(Graphics* graphics, int x, int y, Color color)
 {
   // XXX: Temporary. Replace with assertions later.
-  if (x < 0 || x >= g_screen_width) return;
-  if (y < 0 || y >= g_screen_height) return;
+  if (x < 0 || x >= graphics->screen_width) return;
+  if (y < 0 || y >= graphics->screen_height) return;
 
-  // assert(x >= 0 && x < g_screen_width);
-  // assert(y >= 0 && y < g_screen_height);
+  // assert(x >= 0 && x < graphics->screen_width);
+  // assert(y >= 0 && y < graphics->screen_height);
 
-  g_pixel_buffer[x + y * g_screen_width] = color;
+  graphics->pixel_buffer[x + y * graphics->screen_width] = color;
 }
 
-void clear(Color color)
+void graphics_clear(Graphics* graphics, Color color)
 {
-  for (int y = 0; y < g_screen_height; y++) {
-    for (int x = 0; x < g_screen_width; x++) {
-      put_pixel(x, y, color);
+  const int screen_width = graphics->screen_width;
+  const int screen_height = graphics->screen_height;
+
+  for (int y = 0; y < screen_height; y++) {
+    for (int x = 0; x < screen_width; x++) {
+      graphics_set_pixel(graphics, x, y, color);
     }
   }
 }
 
-void draw_triangle(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
   if (p0->y > p1->y) swap(&p0, &p1);
   if (p0->y > p2->y) swap(&p0, &p2);
@@ -53,16 +58,17 @@ void draw_triangle(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
   vec3_interpolate(&q, p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
 
   if (q.x > p1->x) {
-    draw_triangle_flat_bottom(p0, p1, &q, color);
-    draw_triangle_flat_top(p1, &q, p2, color);
+    graphics_draw_triangle_flat_bottom(graphics, p0, p1, &q, color);
+    graphics_draw_triangle_flat_top(graphics, p1, &q, p2, color);
   } else {
-    draw_triangle_flat_bottom(p0, &q, p1, color);
-    draw_triangle_flat_top(&q, p1, p2, color);
+    graphics_draw_triangle_flat_bottom(graphics, p0, &q, p1, color);
+    graphics_draw_triangle_flat_top(graphics, &q, p1, p2, color);
   }
 }
 
 // `p1` and `p2` form the flat bottom of the triangle.
-static void draw_triangle_flat_bottom(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+static void
+graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
   const float height = p1->y - p0->y;
   const int y_start = ceil(p0->y - 0.5f);
@@ -89,7 +95,7 @@ static void draw_triangle_flat_bottom(const Vec3* p0, const Vec3* p1, const Vec3
     const int x_end = ceil(right.x - 0.5f);
 
     for (int x = x_start; x < x_end; x++) {
-      put_pixel(x, y, color);
+      graphics_set_pixel(graphics, x, y, color);
     }
 
     vec3_add(&left, &left, &left_inc);
@@ -98,7 +104,8 @@ static void draw_triangle_flat_bottom(const Vec3* p0, const Vec3* p1, const Vec3
 }
 
 // `p0` and `p1` form the flat top of the triangle.
-static void draw_triangle_flat_top(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+static void
+graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
   const float height = p2->y - p0->y;
   const int y_start = ceil(p0->y - 0.5f);
@@ -125,7 +132,7 @@ static void draw_triangle_flat_top(const Vec3* p0, const Vec3* p1, const Vec3* p
     const int x_end = ceil(right.x - 0.5f);
 
     for (int x = x_start; x < x_end; x++) {
-      put_pixel(x, y, color);
+      graphics_set_pixel(graphics, x, y, color);
     }
 
     vec3_add(&left, &left, &left_inc);

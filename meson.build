@@ -28,6 +28,7 @@ executable(
     'src/model.c',
     'src/dynlist.c',
     'src/utility.c',
+    'src/pipeline.c',
   ],
   dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],

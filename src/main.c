@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-static void transform_to_screen(Vec3* v);
+static void transform_to_screen(const Graphics* graphics, Vec3* v);
 
 int main(void)
 {
@@ -15,8 +15,11 @@ int main(void)
     return EXIT_FAILURE;
   }
 
+  const int screen_width = 800;
+  const int screen_height = 600;
+
   SDL_Window* window = SDL_CreateWindow(
-    "Bloop", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, g_screen_width, g_screen_height, SDL_WINDOW_RESIZABLE);
+    "Bloop", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_RESIZABLE);
   if (window == NULL) {
     fprintf(stderr, "Failed to create window: %s\n", SDL_GetError());
     return EXIT_FAILURE;
@@ -28,12 +31,12 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  SDL_SetWindowMinimumSize(window, g_screen_width, g_screen_height);
-  SDL_RenderSetLogicalSize(renderer, g_screen_width, g_screen_height);
+  SDL_SetWindowMinimumSize(window, screen_width, screen_height);
+  SDL_RenderSetLogicalSize(renderer, screen_width, screen_height);
   SDL_RenderSetIntegerScale(renderer, SDL_TRUE);
 
   SDL_Texture* screen_texture =
-    SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, g_screen_width, g_screen_height);
+    SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, screen_width, screen_height);
   if (screen_texture == NULL) {
     fprintf(stderr, "Failed to create screen texture: %s\n", SDL_GetError());
     return EXIT_FAILURE;
@@ -47,7 +50,8 @@ int main(void)
 
   const size_t num_mesh_vertices = mesh.vertices.size;
 
-  initialize_graphics();
+  Graphics graphics;
+  graphics_initialize(&graphics, screen_width, screen_height);
 
   while (true) {
     SDL_Event event;
@@ -61,7 +65,7 @@ int main(void)
       }
     }
 
-    clear(0x000000ff);
+    graphics_clear(&graphics, 0x000000ff);
 
     for (size_t i = 0; i < num_mesh_vertices / 3; i++) {
       const Vertex* v0 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i);
@@ -72,20 +76,20 @@ int main(void)
       Vec3 p1 = *(Vec3*)dyn_list_at(&mesh.positions, v1->pos_index);
       Vec3 p2 = *(Vec3*)dyn_list_at(&mesh.positions, v2->pos_index);
 
-      transform_to_screen(&p0);
-      transform_to_screen(&p1);
-      transform_to_screen(&p2);
+      transform_to_screen(&graphics, &p0);
+      transform_to_screen(&graphics, &p1);
+      transform_to_screen(&graphics, &p2);
 
-      draw_triangle(&p0, &p1, &p2, 0xffffffff);
+      graphics_draw_triangle(&graphics, &p0, &p1, &p2, 0xffffffff);
     }
 
     SDL_RenderClear(renderer);
-    SDL_UpdateTexture(screen_texture, NULL, g_pixel_buffer, g_screen_width * sizeof(Color));
+    SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
     SDL_RenderCopy(renderer, screen_texture, NULL, NULL);
     SDL_RenderPresent(renderer);
   }
 
-  deinitialize_graphics();
+  graphics_free(&graphics);
 
   mesh_free(&mesh);
 
@@ -98,8 +102,8 @@ int main(void)
 }
 
 // XXX: Should go elsewhere.
-static void transform_to_screen(Vec3* v)
+static void transform_to_screen(const Graphics* graphics, Vec3* v)
 {
-  v->x = (g_screen_width / 2.0f) * v->x + (g_screen_width / 2.0f);
-  v->y = (-g_screen_height / 2.0f) * v->y + (g_screen_height / 2.0f);
+  v->x = (graphics->screen_width / 2.0f) * v->x + (graphics->screen_width / 2.0f);
+  v->y = (-graphics->screen_height / 2.0f) * v->y + (graphics->screen_height / 2.0f);
 }
