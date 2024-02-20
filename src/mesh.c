@@ -26,7 +26,10 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
   if (initialize) mesh_initialize(mesh);
 
   Model model;
-  model_load(&model, path, true);
+  if (!model_load(&model, path, true)) {
+    fprintf(stderr, "Failed to load model: %s\n", path);
+    return false;
+  }
 
   const size_t num_faces = model.faces.size;
   for (size_t i = 0; i < num_faces; i++) {
@@ -80,5 +83,5 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
   }
 
   model_free(&model);
-  return false;
+  return true;
 }

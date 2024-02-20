@@ -24,8 +24,12 @@ void deinitialize_graphics(void)
 
 void put_pixel(int x, int y, Color color)
 {
-  assert(x >= 0 && x < g_screen_width);
-  assert(y >= 0 && y < g_screen_height);
+  if (x < 0 || x >= g_screen_width) return;
+  if (y < 0 || y >= g_screen_height) return;
+
+  // assert(x >= 0 && x < g_screen_width);
+  // assert(y >= 0 && y < g_screen_height);
+
   g_pixel_buffer[x + y * g_screen_width] = color;
 }
 

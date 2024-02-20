@@ -1,9 +1,12 @@
 #include "graphics.h"
 #include "vector.h"
+#include "mesh.h"
 
 #include <SDL.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+static void transform_to_screen(Vec3* v);
 
 int main(void)
 {
@@ -36,6 +39,14 @@ int main(void)
     return EXIT_FAILURE;
   }
 
+  Mesh mesh;
+  if (!mesh_load_from_file(&mesh, "resources/suzanne.obj", true, false, true)) {
+    fprintf(stderr, "Failed to load mesh.\n");
+    return EXIT_FAILURE;
+  }
+
+  const size_t num_mesh_vertices = mesh.vertices.size;
+
   initialize_graphics();
 
   while (true) {
@@ -52,14 +63,21 @@ int main(void)
 
     clear(0x000000ff);
 
-    const Vec3 t0[] = { { .x = 10, .y = 70 }, { .x = 50, .y = 160 }, { .x = 70, .y = 80 } };
-    const Vec3 t1[] = { { .x = 180, .y = 50 }, { .x = 150, .y = 1 }, { .x = 70, .y = 180 } };
-    const Vec3 t2[] = { { .x = 180, .y = 150 }, { .x = 120, .y = 160 }, { .x = 130, .y = 180 } };
-    const Vec3 t3[] = { { .x = 200, .y = 200 }, { .x = 200, .y = 300 }, { .x = 300, .y = 200 } };
-    draw_triangle(&t0[0], &t0[1], &t0[2], 0xff0000ff);
-    draw_triangle(&t1[0], &t1[1], &t1[2], 0xffffffff);
-    draw_triangle(&t2[0], &t2[1], &t2[2], 0x00ff00ff);
-    draw_triangle(&t3[0], &t3[1], &t3[2], 0x0000ffff);
+    for (size_t i = 0; i < num_mesh_vertices / 3; i++) {
+      const Vertex* v0 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i);
+      const Vertex* v1 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i + 1);
+      const Vertex* v2 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i + 2);
+
+      Vec3 p0 = *(Vec3*)dyn_list_at(&mesh.positions, v0->pos_index);
+      Vec3 p1 = *(Vec3*)dyn_list_at(&mesh.positions, v1->pos_index);
+      Vec3 p2 = *(Vec3*)dyn_list_at(&mesh.positions, v2->pos_index);
+
+      transform_to_screen(&p0);
+      transform_to_screen(&p1);
+      transform_to_screen(&p2);
+
+      draw_triangle(&p0, &p1, &p2, 0xffffffff);
+    }
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, g_pixel_buffer, g_screen_width * sizeof(Color));
@@ -69,10 +87,19 @@ int main(void)
 
   deinitialize_graphics();
 
+  mesh_free(&mesh);
+
   SDL_DestroyTexture(screen_texture);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
 
   return EXIT_SUCCESS;
+}
+
+// XXX: Should go elsewhere.
+static void transform_to_screen(Vec3* v)
+{
+  v->x = (g_screen_width / 2.0f) * v->x + (g_screen_width / 2.0f);
+  v->y = (-g_screen_height / 2.0f) * v->y + (g_screen_height / 2.0f);
 }
