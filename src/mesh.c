@@ -5,25 +5,25 @@
 
 #include <stdio.h>
 
-void mesh_initialize(Mesh* mesh)
+void mesh_init(Mesh* mesh)
 {
-  dyn_list_initialize(&mesh->vertices, sizeof(Vertex));
-  dyn_list_initialize(&mesh->positions, sizeof(Vec3));
-  dyn_list_initialize(&mesh->uvs, sizeof(Vec2));
-  dyn_list_initialize(&mesh->normals, sizeof(Vec3));
+  dyn_list_init(&mesh->vertices, sizeof(Vertex));
+  dyn_list_init(&mesh->positions, sizeof(Vec3));
+  dyn_list_init(&mesh->uvs, sizeof(Vec2));
+  dyn_list_init(&mesh->normals, sizeof(Vec3));
 }
 
-void mesh_free(Mesh* mesh)
+void mesh_destroy(Mesh* mesh)
 {
-  dyn_list_free(&mesh->vertices);
-  dyn_list_free(&mesh->positions);
-  dyn_list_free(&mesh->uvs);
-  dyn_list_free(&mesh->normals);
+  dyn_list_destroy(&mesh->vertices);
+  dyn_list_destroy(&mesh->positions);
+  dyn_list_destroy(&mesh->uvs);
+  dyn_list_destroy(&mesh->normals);
 }
 
 bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals)
 {
-  if (initialize) mesh_initialize(mesh);
+  if (initialize) mesh_init(mesh);
 
   Model model;
   if (!model_load(&model, path, true)) {
@@ -82,6 +82,6 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
     }
   }
 
-  model_free(&model);
+  model_destroy(&model);
   return true;
 }

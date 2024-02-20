@@ -21,8 +21,8 @@ typedef struct
   DynList normals;
 } Mesh;
 
-void mesh_initialize(Mesh* mesh);
-void mesh_free(Mesh* mesh);
+void mesh_init(Mesh* mesh);
+void mesh_destroy(Mesh* mesh);
 bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals);
 
 #endif

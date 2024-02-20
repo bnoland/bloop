@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-void dyn_list_initialize(DynList* list, size_t type_size)
+void dyn_list_init(DynList* list, size_t type_size)
 {
   const size_t initial_capacity = 32;
   list->buffer = malloc(initial_capacity * type_size);
@@ -13,7 +13,7 @@ void dyn_list_initialize(DynList* list, size_t type_size)
   list->type_size = type_size;
 }
 
-void dyn_list_free(DynList* list)
+void dyn_list_destroy(DynList* list)
 {
   free(list->buffer);
   list->buffer = NULL;

@@ -8,17 +8,17 @@
 #include <string.h>
 #include <assert.h>
 
-void model_inititalize(Model* model)
+void model_init(Model* model)
 {
-  dyn_list_initialize(&model->faces, sizeof(Face));
-  dyn_list_initialize(&model->vertices, sizeof(Vec3));
-  dyn_list_initialize(&model->uvs, sizeof(Vec2));
-  dyn_list_initialize(&model->normals, sizeof(Vec3));
+  dyn_list_init(&model->faces, sizeof(Face));
+  dyn_list_init(&model->vertices, sizeof(Vec3));
+  dyn_list_init(&model->uvs, sizeof(Vec2));
+  dyn_list_init(&model->normals, sizeof(Vec3));
 }
 
 bool model_load(Model* model, const char* path, bool initialize)
 {
-  if (initialize) model_inititalize(model);
+  if (initialize) model_init(model);
 
   FILE* input = fopen(path, "r");
   if (input == NULL) {
@@ -114,12 +114,12 @@ bool model_load(Model* model, const char* path, bool initialize)
   return true;
 }
 
-void model_free(Model* model)
+void model_destroy(Model* model)
 {
-  dyn_list_free(&model->faces);
-  dyn_list_free(&model->vertices);
-  dyn_list_free(&model->uvs);
-  dyn_list_free(&model->normals);
+  dyn_list_destroy(&model->faces);
+  dyn_list_destroy(&model->vertices);
+  dyn_list_destroy(&model->uvs);
+  dyn_list_destroy(&model->normals);
 }
 
 const Face* model_get_face(const Model* model, size_t index)

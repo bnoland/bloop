@@ -29,8 +29,8 @@ typedef struct
 } Model;
 
 bool model_load(Model* model, const char* path, bool initialize);
-void model_inititalize(Model* model);
-void model_free(Model* model);
+void model_init(Model* model);
+void model_destroy(Model* model);
 const Face* model_get_face(const Model* model, size_t index);
 const Vec3* model_get_vertex(const Model* model, size_t index);
 const Vec2* model_get_uv(const Model* model, size_t index);

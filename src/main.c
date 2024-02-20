@@ -51,7 +51,7 @@ int main(void)
   const size_t num_mesh_vertices = mesh.vertices.size;
 
   Graphics graphics;
-  graphics_initialize(&graphics, screen_width, screen_height);
+  graphics_init(&graphics, screen_width, screen_height);
 
   while (true) {
     SDL_Event event;
@@ -89,9 +89,9 @@ int main(void)
     SDL_RenderPresent(renderer);
   }
 
-  graphics_free(&graphics);
+  graphics_delete(&graphics);
 
-  mesh_free(&mesh);
+  mesh_destroy(&mesh);
 
   SDL_DestroyTexture(screen_texture);
   SDL_DestroyRenderer(renderer);

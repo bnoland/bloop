@@ -11,14 +11,14 @@ graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* 
 
 static void swap(const Vec3** v, const Vec3** w);
 
-void graphics_initialize(Graphics* graphics, int screen_width, int screen_height)
+void graphics_init(Graphics* graphics, int screen_width, int screen_height)
 {
   graphics->screen_width = screen_width;
   graphics->screen_height = screen_height;
   graphics->pixel_buffer = (Color*)malloc(screen_width * screen_height * sizeof(Color));
 }
 
-void graphics_free(Graphics* graphics)
+void graphics_destroy(Graphics* graphics)
 {
   free(graphics->pixel_buffer);
   graphics->pixel_buffer = NULL;
