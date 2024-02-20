@@ -15,6 +15,6 @@ void initialize_graphics(void);
 void deinitialize_graphics(void);
 void put_pixel(int x, int y, Color color);
 void clear(Color color);
-void draw_triangle(const Vec3* v0, const Vec3* v1, const Vec3* v2, Color color);
+void draw_triangle(const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
 
 #endif
