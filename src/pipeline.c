@@ -57,7 +57,7 @@ static void pipeline_process_vertices(Pipeline* pipeline, const DynList* vertice
   for (size_t i = 0; i < vertices->size; i++) {
     Vertex* v = (Vertex*)dyn_list_at(vertices, i);
     Vertex* tv = (Vertex*)dyn_list_add(&trans_verts, v);
-    default_vertex_shader(tv);
+    pipeline->vertex_shader(tv);
   }
 
   pipeline_assemble_triangles(pipeline, &trans_verts, indices);
@@ -90,7 +90,7 @@ static void pipeline_process_triangle(Pipeline* pipeline,
   Vertex v0_copy = *v0;
   Vertex v1_copy = *v1;
   Vertex v2_copy = *v2;
-  default_geom_shader(&v0_copy, &v1_copy, &v2_copy, triangle_index);
+  pipeline->geom_shader(&v0_copy, &v1_copy, &v2_copy, triangle_index);
   pipeline_post_process_triangle_vertices(pipeline, &v0_copy, &v1_copy, &v2_copy);
 }
 
