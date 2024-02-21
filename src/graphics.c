@@ -8,6 +8,13 @@ static void
 graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
 static void
 graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
+static void graphics_draw_triangle_flat(Graphics* graphics,
+                                        const Vec3* left_start,
+                                        const Vec3* right_start,
+                                        const Vec3* left_inc,
+                                        const Vec3* right_inc,
+                                        float height,
+                                        Color color);
 
 static void swap(const Vec3** v, const Vec3** w);
 
@@ -67,8 +74,6 @@ static void
 graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
   const float height = p1->y - p0->y;
-  const int y_start = ceil(p0->y - 0.5f);
-  const int y_end = ceil(p1->y - 0.5f);
 
   // (p1 - p0) / height
   Vec3 left_inc;
@@ -80,23 +85,7 @@ graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec
   vec3_sub(&right_inc, p2, p0);
   vec3_mul(&right_inc, &right_inc, 1.0f / height);
 
-  Vec3 left;
-  vec3_mul_add(&left, p0, &left_inc, y_start + 0.5f - p0->y);  // pre-step
-
-  Vec3 right;
-  vec3_mul_add(&right, p0, &right_inc, y_start + 0.5f - p0->y);  // pre-step
-
-  for (int y = y_start; y < y_end; y++) {
-    const int x_start = ceil(left.x - 0.5f);
-    const int x_end = ceil(right.x - 0.5f);
-
-    for (int x = x_start; x < x_end; x++) {
-      graphics_set_pixel(graphics, x, y, color);
-    }
-
-    vec3_add(&left, &left, &left_inc);
-    vec3_add(&right, &right, &right_inc);
-  }
+  graphics_draw_triangle_flat(graphics, p0, p0, &left_inc, &right_inc, height, color);
 }
 
 // `p0` and `p1` form the flat top of the triangle.
@@ -104,8 +93,6 @@ static void
 graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
   const float height = p2->y - p0->y;
-  const int y_start = ceil(p0->y - 0.5f);
-  const int y_end = ceil(p2->y - 0.5f);
 
   // (p2 - p0) / height
   Vec3 left_inc;
@@ -117,11 +104,26 @@ graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* 
   vec3_sub(&right_inc, p2, p1);
   vec3_mul(&right_inc, &right_inc, 1.0f / height);
 
-  Vec3 left;
-  vec3_mul_add(&left, p0, &left_inc, y_start + 0.5f - p0->y);  // pre-step
+  graphics_draw_triangle_flat(graphics, p0, p1, &left_inc, &right_inc, height, color);
+}
 
-  Vec3 right;
-  vec3_mul_add(&right, p1, &right_inc, y_start + 0.5f - p1->y);  // pre-step
+static void graphics_draw_triangle_flat(Graphics* graphics,
+                                        const Vec3* left_start,
+                                        const Vec3* right_start,
+                                        const Vec3* left_inc,
+                                        const Vec3* right_inc,
+                                        float height,
+                                        Color color)
+{
+  Vec3 left = *left_start;
+  Vec3 right = *right_start;
+
+  const int y_start = ceil(left.y - 0.5f);
+  const int y_end = ceil(left.y + height - 0.5f);
+
+  // Move to starting positions.
+  vec3_mul_add(&left, &left, left_inc, y_start + 0.5f - left.y);
+  vec3_mul_add(&right, &right, right_inc, y_start + 0.5f - right.y);
 
   for (int y = y_start; y < y_end; y++) {
     const int x_start = ceil(left.x - 0.5f);
@@ -131,8 +133,8 @@ graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* 
       graphics_set_pixel(graphics, x, y, color);
     }
 
-    vec3_add(&left, &left, &left_inc);
-    vec3_add(&right, &right, &right_inc);
+    vec3_add(&left, &left, left_inc);
+    vec3_add(&right, &right, right_inc);
   }
 }
 
