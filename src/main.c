@@ -80,16 +80,7 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    // pipeline_draw(&pipeline, &vertices, &indices);
-
-    const Vec3 t0[] = { { .x = 10, .y = 70 }, { .x = 50, .y = 160 }, { .x = 70, .y = 80 } };
-    const Vec3 t1[] = { { .x = 180, .y = 50 }, { .x = 150, .y = 1 }, { .x = 70, .y = 180 } };
-    const Vec3 t2[] = { { .x = 180, .y = 150 }, { .x = 120, .y = 160 }, { .x = 130, .y = 180 } };
-    const Vec3 t3[] = { { .x = 200, .y = 200 }, { .x = 200, .y = 300 }, { .x = 300, .y = 200 } };
-    graphics_draw_triangle(&graphics, &t0[0], &t0[1], &t0[2], 0xff0000ff);
-    graphics_draw_triangle(&graphics, &t1[0], &t1[1], &t1[2], 0xffffffff);
-    graphics_draw_triangle(&graphics, &t2[0], &t2[1], &t2[2], 0x00ff00ff);
-    graphics_draw_triangle(&graphics, &t3[0], &t3[1], &t3[2], 0x0000ffff);
+    pipeline_draw(&pipeline, &vertices, &indices);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));

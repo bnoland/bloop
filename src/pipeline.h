@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+// XXX: Vertex interpolation routines.
 typedef struct
 {
   Vec3 pos;
