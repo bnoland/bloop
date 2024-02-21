@@ -9,7 +9,7 @@
 
 typedef void (*VertexShaderFunction)(Vertex* v);
 typedef void (*GeometryShaderFunction)(Vertex* v0, Vertex* v1, Vertex* v2, size_t triangle_index);
-typedef void (*PixelShaderFunction)(Vertex* v);
+typedef Color (*PixelShaderFunction)(Vertex* v);
 
 typedef struct
 {
