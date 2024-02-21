@@ -7,7 +7,7 @@
 
 void mesh_init(Mesh* mesh)
 {
-  dyn_list_init(&mesh->vertices, sizeof(Vertex));
+  dyn_list_init(&mesh->vertices, sizeof(MeshVertex));
   dyn_list_init(&mesh->positions, sizeof(Vec3));
   dyn_list_init(&mesh->uvs, sizeof(Vec2));
   dyn_list_init(&mesh->normals, sizeof(Vec3));
@@ -31,12 +31,11 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
     return false;
   }
 
-  const size_t num_faces = model.faces.size;
-  for (size_t i = 0; i < num_faces; i++) {
+  for (size_t i = 0; i < model.faces.size; i++) {
     const Face* face = model_get_face(&model, i);
 
     for (size_t j = 0; j < 3; j++) {
-      Vertex vertex;
+      MeshVertex vertex;
 
       // Model indices are 1-based, hence the -1.
       vertex.pos_index = face->elements[j].vertex_index - 1;
@@ -63,21 +62,18 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
     }
   }
 
-  const size_t num_vertices = model.vertices.size;
-  for (size_t i = 0; i < num_vertices; i++) {
+  for (size_t i = 0; i < model.vertices.size; i++) {
     dyn_list_add(&mesh->positions, model_get_vertex(&model, i));
   }
 
   if (load_uvs) {
-    const size_t num_uvs = model.uvs.size;
-    for (size_t i = 0; i < num_uvs; i++) {
+    for (size_t i = 0; i < model.uvs.size; i++) {
       dyn_list_add(&mesh->uvs, model_get_uv(&model, i));
     }
   }
 
   if (load_normals) {
-    const size_t num_normals = model.normals.size;
-    for (size_t i = 0; i < num_normals; i++) {
+    for (size_t i = 0; i < model.normals.size; i++) {
       dyn_list_add(&mesh->normals, model_get_normal(&model, i));
     }
   }

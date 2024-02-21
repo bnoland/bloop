@@ -1,12 +1,11 @@
 #include "graphics.h"
-#include "vector.h"
 #include "mesh.h"
+#include "pipeline.h"
+#include "dynlist.h"
 
 #include <SDL.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-static void transform_to_screen(const Graphics* graphics, Vec3* v);
 
 int main(void)
 {
@@ -48,10 +47,25 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  const size_t num_mesh_vertices = mesh.vertices.size;
+  DynList vertices;
+  dyn_list_init(&vertices, sizeof(Vertex));
+  for (size_t i = 0; i < mesh.positions.size; i++) {
+    Vertex vertex = { .pos = *(Vec3*)dyn_list_at(&mesh.positions, i) };
+    dyn_list_add(&vertices, &vertex);
+  };
+
+  DynList indices;
+  dyn_list_init(&indices, sizeof(size_t));
+  for (size_t i = 0; i < mesh.vertices.size; i++) {
+    const MeshVertex* mesh_vert = (MeshVertex*)dyn_list_at(&mesh.vertices, i);
+    dyn_list_add(&indices, &mesh_vert->pos_index);
+  }
 
   Graphics graphics;
   graphics_init(&graphics, screen_width, screen_height);
+
+  Pipeline pipeline;
+  pipeline_init(&pipeline, &graphics, NULL, NULL, NULL);
 
   while (true) {
     SDL_Event event;
@@ -66,22 +80,7 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-
-    for (size_t i = 0; i < num_mesh_vertices / 3; i++) {
-      const Vertex* v0 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i);
-      const Vertex* v1 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i + 1);
-      const Vertex* v2 = (Vertex*)dyn_list_at(&mesh.vertices, 3 * i + 2);
-
-      Vec3 p0 = *(Vec3*)dyn_list_at(&mesh.positions, v0->pos_index);
-      Vec3 p1 = *(Vec3*)dyn_list_at(&mesh.positions, v1->pos_index);
-      Vec3 p2 = *(Vec3*)dyn_list_at(&mesh.positions, v2->pos_index);
-
-      transform_to_screen(&graphics, &p0);
-      transform_to_screen(&graphics, &p1);
-      transform_to_screen(&graphics, &p2);
-
-      graphics_draw_triangle(&graphics, &p0, &p1, &p2, 0xffffffff);
-    }
+    pipeline_draw(&pipeline, &vertices, &indices);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
@@ -89,8 +88,10 @@ int main(void)
     SDL_RenderPresent(renderer);
   }
 
-  graphics_delete(&graphics);
+  dyn_list_destroy(&vertices);
+  dyn_list_destroy(&indices);
 
+  graphics_destroy(&graphics);
   mesh_destroy(&mesh);
 
   SDL_DestroyTexture(screen_texture);
@@ -99,11 +100,4 @@ int main(void)
   SDL_Quit();
 
   return EXIT_SUCCESS;
-}
-
-// XXX: Should go elsewhere.
-static void transform_to_screen(const Graphics* graphics, Vec3* v)
-{
-  v->x = (graphics->screen_width / 2.0f) * v->x + (graphics->screen_width / 2.0f);
-  v->y = (-graphics->screen_height / 2.0f) * v->y + (graphics->screen_height / 2.0f);
 }

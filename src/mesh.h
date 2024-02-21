@@ -11,7 +11,7 @@ typedef struct
   size_t pos_index;
   size_t uv_index;
   size_t normal_index;
-} Vertex;
+} MeshVertex;
 
 typedef struct
 {

@@ -26,12 +26,8 @@ void graphics_destroy(Graphics* graphics)
 
 void graphics_set_pixel(Graphics* graphics, int x, int y, Color color)
 {
-  // XXX: Temporary. Replace with assertions later.
-  if (x < 0 || x >= graphics->screen_width) return;
-  if (y < 0 || y >= graphics->screen_height) return;
-
-  // assert(x >= 0 && x < graphics->screen_width);
-  // assert(y >= 0 && y < graphics->screen_height);
+  assert(x >= 0 && x < graphics->screen_width);
+  assert(y >= 0 && y < graphics->screen_height);
 
   graphics->pixel_buffer[x + y * graphics->screen_width] = color;
 }
