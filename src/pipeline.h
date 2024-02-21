@@ -3,16 +3,9 @@
 
 #include "dynlist.h"
 #include "graphics.h"
+#include "vertex.h"
 
 #include <stddef.h>
-
-// XXX: Vertex interpolation routines.
-typedef struct
-{
-  Vec3 pos;
-  Vec2 uv;
-  Vec3 normal;
-} Vertex;
 
 typedef void (*VertexShaderFunction)(Vertex* v);
 typedef void (*GeometryShaderFunction)(Vertex* v0, Vertex* v1, Vertex* v2, size_t triangle_index);

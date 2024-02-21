@@ -17,6 +17,8 @@ typedef struct
 void vec2_add(Vec2* dest, const Vec2* v, const Vec2* w);
 void vec2_sub(Vec2* dest, const Vec2* v, const Vec2* w);
 void vec2_mul(Vec2* dest, const Vec2* v, float c);
+void vec2_mul_add(Vec2* dest, const Vec2* v, const Vec2* w, float c);
+void vec2_interpolate(Vec2* dest, const Vec2* v, const Vec2* w, float alpha);
 float vec2_dot(const Vec2* v, const Vec2* w);
 
 typedef struct

@@ -12,21 +12,30 @@ static void pipeline_process_triangle(Pipeline* pipeline,
 static void pipeline_post_process_triangle_vertices(Pipeline* pipeline, Vertex* v0, Vertex* v1, Vertex* v2);
 static void pipeline_transform_to_screen(Pipeline* pipeline, Vertex* v);
 
-// XXX: Triangle drawing routines should operate on vertices directly for interpolation.
-static void pipeline_draw_triangle(Pipeline* pipeline, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
-static void
-pipeline_draw_triangle_flat_bottom(Pipeline* pipeline, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
-static void
-pipeline_draw_triangle_flat_top(Pipeline* pipeline, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
+static void pipeline_draw_triangle(Pipeline* pipeline,
+                                   const Vertex* v0,
+                                   const Vertex* v1,
+                                   const Vertex* v2,
+                                   Color color);
+static void pipeline_draw_triangle_flat_bottom(Pipeline* pipeline,
+                                               const Vertex* v0,
+                                               const Vertex* v1,
+                                               const Vertex* v2,
+                                               Color color);
+static void pipeline_draw_triangle_flat_top(Pipeline* pipeline,
+                                            const Vertex* v0,
+                                            const Vertex* v1,
+                                            const Vertex* v2,
+                                            Color color);
 static void pipeline_draw_triangle_flat(Pipeline* pipeline,
-                                        const Vec3* left_start,
-                                        const Vec3* right_start,
-                                        const Vec3* left_inc,
-                                        const Vec3* right_inc,
+                                        const Vertex* left_start,
+                                        const Vertex* right_start,
+                                        const Vertex* left_inc,
+                                        const Vertex* right_inc,
                                         float height,
                                         Color color);
 
-static void swap(const Vec3** v, const Vec3** w);
+static void swap(const Vertex** v, const Vertex** w);
 
 static void default_vertex_shader(Vertex* v);
 static void default_geom_shader(Vertex* v0, Vertex* v1, Vertex* v2, size_t triangle_index);
@@ -86,7 +95,8 @@ static void pipeline_process_triangle(Pipeline* pipeline,
                                       const Vertex* v2,
                                       size_t triangle_index)
 {
-  // Need copies since geometry shader and post-process step of pipeline modify input vertices.
+  // Need copies since geometry shader and post-process step of pipeline modify
+  // input vertices.
   Vertex v0_copy = *v0;
   Vertex v1_copy = *v1;
   Vertex v2_copy = *v2;
@@ -100,7 +110,7 @@ static void pipeline_post_process_triangle_vertices(Pipeline* pipeline, Vertex* 
   pipeline_transform_to_screen(pipeline, v1);
   pipeline_transform_to_screen(pipeline, v2);
 
-  pipeline_draw_triangle(pipeline, &v0->pos, &v1->pos, &v2->pos, 0xffffffff);
+  pipeline_draw_triangle(pipeline, v0, v1, v2, 0xffffffff);
 }
 
 static void pipeline_transform_to_screen(Pipeline* pipeline, Vertex* v)
@@ -111,97 +121,107 @@ static void pipeline_transform_to_screen(Pipeline* pipeline, Vertex* v)
   v->pos.y = (screen_height / 2.0f) * (-v->pos.y + 1.0f);
 }
 
-static void pipeline_draw_triangle(Pipeline* pipeline, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+static void pipeline_draw_triangle(Pipeline* pipeline,
+                                   const Vertex* v0,
+                                   const Vertex* v1,
+                                   const Vertex* v2,
+                                   Color color)
 {
-  if (p0->y > p1->y) swap(&p0, &p1);
-  if (p0->y > p2->y) swap(&p0, &p2);
-  if (p1->y > p2->y) swap(&p1, &p2);
+  if (v0->pos.y > v1->pos.y) swap(&v0, &v1);
+  if (v0->pos.y > v2->pos.y) swap(&v0, &v2);
+  if (v1->pos.y > v2->pos.y) swap(&v1, &v2);
 
-  Vec3 q;
-  vec3_interpolate(&q, p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
+  Vertex q;
+  vertex_interpolate(&q, v0, v2, (v1->pos.y - v0->pos.y) / (v2->pos.y - v0->pos.y));
 
-  if (q.x > p1->x) {
-    pipeline_draw_triangle_flat_bottom(pipeline, p0, p1, &q, color);
-    pipeline_draw_triangle_flat_top(pipeline, p1, &q, p2, color);
+  if (q.pos.x > v1->pos.x) {
+    pipeline_draw_triangle_flat_bottom(pipeline, v0, v1, &q, color);
+    pipeline_draw_triangle_flat_top(pipeline, v1, &q, v2, color);
   } else {
-    pipeline_draw_triangle_flat_bottom(pipeline, p0, &q, p1, color);
-    pipeline_draw_triangle_flat_top(pipeline, &q, p1, p2, color);
+    pipeline_draw_triangle_flat_bottom(pipeline, v0, &q, v1, color);
+    pipeline_draw_triangle_flat_top(pipeline, &q, v1, v2, color);
   }
 }
 
-// `p1` and `p2` form the flat bottom of the triangle.
-static void
-pipeline_draw_triangle_flat_bottom(Pipeline* pipeline, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+// `v1` and `v2` form the flat bottom of the triangle.
+static void pipeline_draw_triangle_flat_bottom(Pipeline* pipeline,
+                                               const Vertex* v0,
+                                               const Vertex* v1,
+                                               const Vertex* v2,
+                                               Color color)
 {
-  const float height = p1->y - p0->y;
+  const float height = v1->pos.y - v0->pos.y;
 
-  // (p1 - p0) / height
-  Vec3 left_inc;
-  vec3_sub(&left_inc, p1, p0);
-  vec3_mul(&left_inc, &left_inc, 1.0f / height);
+  // (v1 - v0) / height
+  Vertex left_inc;
+  vertex_sub(&left_inc, v1, v0);
+  vertex_mul(&left_inc, &left_inc, 1.0f / height);
 
-  // (p2 - p0) / height
-  Vec3 right_inc;
-  vec3_sub(&right_inc, p2, p0);
-  vec3_mul(&right_inc, &right_inc, 1.0f / height);
+  // (v2 - v0) / height
+  Vertex right_inc;
+  vertex_sub(&right_inc, v2, v0);
+  vertex_mul(&right_inc, &right_inc, 1.0f / height);
 
-  pipeline_draw_triangle_flat(pipeline, p0, p0, &left_inc, &right_inc, height, color);
+  pipeline_draw_triangle_flat(pipeline, v0, v0, &left_inc, &right_inc, height, color);
 }
 
-// `p0` and `p1` form the flat top of the triangle.
-static void
-pipeline_draw_triangle_flat_top(Pipeline* pipeline, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+// `v0` and `v1` form the flat top of the triangle.
+static void pipeline_draw_triangle_flat_top(Pipeline* pipeline,
+                                            const Vertex* v0,
+                                            const Vertex* v1,
+                                            const Vertex* v2,
+                                            Color color)
 {
-  const float height = p2->y - p0->y;
+  const float height = v2->pos.y - v0->pos.y;
 
-  // (p2 - p0) / height
-  Vec3 left_inc;
-  vec3_sub(&left_inc, p2, p0);
-  vec3_mul(&left_inc, &left_inc, 1.0f / height);
+  // (v2 - v0) / height
+  Vertex left_inc;
+  vertex_sub(&left_inc, v2, v0);
+  vertex_mul(&left_inc, &left_inc, 1.0f / height);
 
-  // (p2 - p1) / height
-  Vec3 right_inc;
-  vec3_sub(&right_inc, p2, p1);
-  vec3_mul(&right_inc, &right_inc, 1.0f / height);
+  // (v2 - v1) / height
+  Vertex right_inc;
+  vertex_sub(&right_inc, v2, v1);
+  vertex_mul(&right_inc, &right_inc, 1.0f / height);
 
-  pipeline_draw_triangle_flat(pipeline, p0, p1, &left_inc, &right_inc, height, color);
+  pipeline_draw_triangle_flat(pipeline, v0, v1, &left_inc, &right_inc, height, color);
 }
 
 static void pipeline_draw_triangle_flat(Pipeline* pipeline,
-                                        const Vec3* left_start,
-                                        const Vec3* right_start,
-                                        const Vec3* left_inc,
-                                        const Vec3* right_inc,
+                                        const Vertex* left_start,
+                                        const Vertex* right_start,
+                                        const Vertex* left_inc,
+                                        const Vertex* right_inc,
                                         float height,
                                         Color color)
 {
-  Vec3 left = *left_start;
-  Vec3 right = *right_start;
+  Vertex left = *left_start;
+  Vertex right = *right_start;
 
-  const int y_start = ceil(left.y - 0.5f);
-  const int y_end = ceil(left.y + height - 0.5f);
+  const int y_start = ceil(left.pos.y - 0.5f);
+  const int y_end = ceil(left.pos.y + height - 0.5f);
 
   // Move to starting positions.
-  vec3_mul_add(&left, &left, left_inc, y_start + 0.5f - left.y);
-  vec3_mul_add(&right, &right, right_inc, y_start + 0.5f - right.y);
+  vertex_mul_add(&left, &left, left_inc, y_start + 0.5f - left.pos.y);
+  vertex_mul_add(&right, &right, right_inc, y_start + 0.5f - right.pos.y);
 
   for (int y = y_start; y < y_end; y++) {
-    const int x_start = ceil(left.x - 0.5f);
-    const int x_end = ceil(right.x - 0.5f);
+    const int x_start = ceil(left.pos.x - 0.5f);
+    const int x_end = ceil(right.pos.x - 0.5f);
 
     for (int x = x_start; x < x_end; x++) {
       // XXX: Call pixel shader.
       graphics_set_pixel(pipeline->graphics, x, y, color);
     }
 
-    vec3_add(&left, &left, left_inc);
-    vec3_add(&right, &right, right_inc);
+    vertex_add(&left, &left, left_inc);
+    vertex_add(&right, &right, right_inc);
   }
 }
 
-static void swap(const Vec3** v, const Vec3** w)
+static void swap(const Vertex** v, const Vertex** w)
 {
-  const Vec3* temp = *v;
+  const Vertex* temp = *v;
   *v = *w;
   *w = temp;
 }

@@ -18,6 +18,18 @@ void vec2_mul(Vec2* dest, const Vec2* v, float c)
   dest->y = v->y * c;
 }
 
+void vec2_mul_add(Vec2* dest, const Vec2* v, const Vec2* w, float c)
+{
+  dest->x = v->x + w->x * c;
+  dest->y = v->y + w->y * c;
+}
+
+void vec2_interpolate(Vec2* dest, const Vec2* v, const Vec2* w, float alpha)
+{
+  dest->x = (1.0f - alpha) * v->x + alpha * w->x;
+  dest->y = (1.0f - alpha) * v->y + alpha * w->y;
+}
+
 float vec2_dot(const Vec2* v, const Vec2* w)
 {
   return v->x * w->x + v->y * w->y;

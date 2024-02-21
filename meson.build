@@ -29,6 +29,7 @@ executable(
     'src/dynlist.c',
     'src/utility.c',
     'src/pipeline.c',
+    'src/vertex.c',
   ],
   dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],

@@ -14,6 +14,7 @@ AllowShortLoopsOnASingleLine: true
 AllowShortLambdasOnASingleLine: Inline
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 10000  # A very high value.
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: true
 BinPackArguments: false

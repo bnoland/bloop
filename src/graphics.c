@@ -4,10 +4,16 @@
 #include <stdlib.h>
 #include <tgmath.h>
 
-static void
-graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
-static void
-graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
+static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
+                                               const Vec3* p0,
+                                               const Vec3* p1,
+                                               const Vec3* p2,
+                                               Color color);
+static void graphics_draw_triangle_flat_top(Graphics* graphics,
+                                            const Vec3* p0,
+                                            const Vec3* p1,
+                                            const Vec3* p2,
+                                            Color color);
 static void graphics_draw_triangle_flat(Graphics* graphics,
                                         const Vec3* left_start,
                                         const Vec3* right_start,
@@ -70,8 +76,11 @@ void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, 
 }
 
 // `p1` and `p2` form the flat bottom of the triangle.
-static void
-graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
+                                               const Vec3* p0,
+                                               const Vec3* p1,
+                                               const Vec3* p2,
+                                               Color color)
 {
   const float height = p1->y - p0->y;
 
@@ -89,8 +98,11 @@ graphics_draw_triangle_flat_bottom(Graphics* graphics, const Vec3* p0, const Vec
 }
 
 // `p0` and `p1` form the flat top of the triangle.
-static void
-graphics_draw_triangle_flat_top(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+static void graphics_draw_triangle_flat_top(Graphics* graphics,
+                                            const Vec3* p0,
+                                            const Vec3* p1,
+                                            const Vec3* p2,
+                                            Color color)
 {
   const float height = p2->y - p0->y;
 
