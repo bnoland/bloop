@@ -4,6 +4,8 @@
 #include "dynlist.h"
 #include "graphics.h"
 
+#include <stddef.h>
+
 typedef struct
 {
   Vec3 pos;
