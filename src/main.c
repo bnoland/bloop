@@ -1,10 +1,12 @@
 #include "graphics.h"
 #include "mesh.h"
-#include "pipeline.h"
+#include "simple_pipeline.h"
 
 #include <SDL.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+static void vertex_shader(const Vertex* in, Vertex* out);
 
 int main(void)
 {
@@ -49,8 +51,8 @@ int main(void)
   Graphics graphics;
   graphics_init(&graphics, screen_width, screen_height);
 
-  Pipeline pipeline;
-  pipeline_init(&pipeline, &graphics, NULL, NULL, NULL);
+  SimplePipeline pipeline;
+  simple_pipeline_init(&pipeline, &graphics, vertex_shader, NULL, NULL);
 
   while (true) {
     SDL_Event event;
@@ -65,7 +67,7 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    pipeline_draw(&pipeline, &mesh);
+    simple_pipeline_draw(&pipeline, &mesh);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
@@ -82,4 +84,11 @@ int main(void)
   SDL_Quit();
 
   return EXIT_SUCCESS;
+}
+
+static void vertex_shader(const Vertex* in, Vertex* out)
+{
+  out->pos.x = in->pos.x / 2.0f;
+  out->pos.y = in->pos.y / 2.0f;
+  out->pos.z = in->pos.z;
 }
