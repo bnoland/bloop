@@ -17,13 +17,19 @@ void mesh_destroy(Mesh* mesh)
   dyn_list_destroy(&mesh->indices);
 }
 
-static bool face_elements_equal(const FaceElement* a, const FaceElement* b)
+static bool face_elements_equal(const void* a, const void* b)
 {
-  if (a->pos_index != b->pos_index) return false;
-  if (a->has_uv != b->has_uv) return false;
-  if (a->has_uv && a->uv_index != b->uv_index) return false;
-  if (a->has_normal != b->has_normal) return false;
-  if (a->has_normal && a->normal_index != b->normal_index) return false;
+  const FaceElement* fa = (const FaceElement*)a;
+  const FaceElement* fb = (const FaceElement*)b;
+
+  if (fa->pos_index != fb->pos_index) return false;
+
+  if (fa->has_uv != fb->has_uv) return false;
+  if (fa->has_uv && fa->uv_index != fb->uv_index) return false;
+
+  if (fa->has_normal != fb->has_normal) return false;
+  if (fa->has_normal && fa->normal_index != fb->normal_index) return false;
+
   return true;
 }
 
@@ -59,7 +65,7 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
     }
   }
 
-  // XXX: Replace with a better data structure.
+  // XXX: Replace with a better data structure. Maybe a hash map from face elements -> indices?
   DynList face_elements_seen;
   dyn_list_init(&face_elements_seen, sizeof(FaceElement));
 
@@ -69,25 +75,17 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
     const Face* face = model_get_face(&model, i);
 
     for (size_t j = 0; j < 3; j++) {
-
-      // XXX: Make a `dyn_list_search()` function that returns an index.
-      bool seen_face_element = false;
-      for (size_t index = 0; index < face_elements_seen.size; index++) {
-        const FaceElement* element = (const FaceElement*)dyn_list_at(&face_elements_seen, index);
-        if (face_elements_equal(element, &face->elements[j])) {
-          dyn_list_add(&mesh->indices, &index);
-          seen_face_element = true;
-          break;
-        }
+      size_t index;
+      if (dyn_list_search(&face_elements_seen, &face->elements[j], &index, face_elements_equal)) {
+        dyn_list_add(&mesh->indices, &index);
+        continue;
       }
-
-      if (seen_face_element) continue;
 
       dyn_list_add(&face_elements_seen, &face->elements[j]);
 
-      MeshVertex vertex;
-
-      vertex.pos = *model_get_position(&model, face->elements[j].pos_index);
+      MeshVertex vertex = {
+        .pos = *model_get_position(&model, face->elements[j].pos_index),
+      };
 
       if (load_uvs) {
         if (!face->elements[j].has_uv) {

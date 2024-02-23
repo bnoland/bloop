@@ -46,3 +46,14 @@ const void* dyn_list_at(const DynList* list, size_t index)
   const size_t offset = index * list->type_size;
   return list->buffer + offset;
 }
+
+bool dyn_list_search(const DynList* list, const void* value, size_t* index, bool equal(const void*, const void*))
+{
+  for (size_t i = 0; i < list->size; i++) {
+    if (equal(dyn_list_at(list, i), value)) {
+      *index = i;
+      return true;
+    }
+  }
+  return false;
+}
