@@ -24,6 +24,13 @@ void dyn_list_destroy(DynList* list)
 
 void* dyn_list_add(DynList* list, const void* data_ptr)
 {
+  void* dest = dyn_list_add_slot(list);
+  memcpy(dest, data_ptr, list->type_size);
+  return dest;
+}
+
+void* dyn_list_add_slot(DynList* list)
+{
   if (list->size >= list->capacity) {
     const size_t new_capacity = 2 * list->capacity;
     const size_t num_bytes = new_capacity * list->type_size;
@@ -33,8 +40,6 @@ void* dyn_list_add(DynList* list, const void* data_ptr)
 
   const size_t offset = list->size * list->type_size;
   unsigned char* dest = list->buffer + offset;
-
-  memcpy(dest, data_ptr, list->type_size);
   list->size++;
 
   return dest;

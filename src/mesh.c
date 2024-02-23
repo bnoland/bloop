@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+static bool face_elements_equal(const void* a, const void* b);
+
 void mesh_init(Mesh* mesh)
 {
   dyn_list_init(&mesh->vertices, sizeof(MeshVertex));
@@ -15,22 +17,6 @@ void mesh_destroy(Mesh* mesh)
 {
   dyn_list_destroy(&mesh->vertices);
   dyn_list_destroy(&mesh->indices);
-}
-
-static bool face_elements_equal(const void* a, const void* b)
-{
-  const FaceElement* fa = (const FaceElement*)a;
-  const FaceElement* fb = (const FaceElement*)b;
-
-  if (fa->pos_index != fb->pos_index) return false;
-
-  if (fa->has_uv != fb->has_uv) return false;
-  if (fa->has_uv && fa->uv_index != fb->uv_index) return false;
-
-  if (fa->has_normal != fb->has_normal) return false;
-  if (fa->has_normal && fa->normal_index != fb->normal_index) return false;
-
-  return true;
 }
 
 bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals)
@@ -115,5 +101,21 @@ bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool loa
   dyn_list_destroy(&face_elements_seen);
 
   model_destroy(&model);
+  return true;
+}
+
+static bool face_elements_equal(const void* a, const void* b)
+{
+  const FaceElement* fa = (const FaceElement*)a;
+  const FaceElement* fb = (const FaceElement*)b;
+
+  if (fa->pos_index != fb->pos_index) return false;
+
+  if (fa->has_uv != fb->has_uv) return false;
+  if (fa->has_uv && fa->uv_index != fb->uv_index) return false;
+
+  if (fa->has_normal != fb->has_normal) return false;
+  if (fa->has_normal && fa->normal_index != fb->normal_index) return false;
+
   return true;
 }

@@ -1,5 +1,12 @@
 #include "vertex.h"
 
+void vertex_init(Vertex* v, const MeshVertex* mv)
+{
+  v->pos = mv->pos;
+  v->uv = mv->uv;
+  v->normal = mv->normal;
+}
+
 void vertex_add(Vertex* dest, const Vertex* v, const Vertex* w)
 {
   vec3_add(&dest->pos, &v->pos, &w->pos);
