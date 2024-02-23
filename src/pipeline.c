@@ -12,11 +12,17 @@ static void default_vertex_shader(Vertex* v)
 }
 
 static void default_geom_shader(Vertex* v0, Vertex* v1, Vertex* v2, size_t triangle_index)
-{}
+{
+  (void)v0;
+  (void)v1;
+  (void)v2;
+  (void)triangle_index;
+}
 
 static Color default_pixel_shader(Vertex* v)
 {
-  return 0xffff00ff;
+  (void)v;
+  return 0xffffffff;
 }
 
 static void pipeline_draw_triangle_flat(Pipeline* pipeline,
