@@ -11,7 +11,7 @@
 void model_init(Model* model)
 {
   dyn_list_init(&model->faces, sizeof(Face));
-  dyn_list_init(&model->vertices, sizeof(Vec3));
+  dyn_list_init(&model->positions, sizeof(Vec3));
   dyn_list_init(&model->uvs, sizeof(Vec2));
   dyn_list_init(&model->normals, sizeof(Vec3));
 }
@@ -34,14 +34,14 @@ bool model_load(Model* model, const char* path, bool initialize)
 
     if (line[0] == '#') continue;  // Comment
 
-    // Vertex position
+    // Position
     if (strncmp(line, "v ", 2) == 0) {
-      Vec3 vertex;
-      if (sscanf(&line[2], "%f %f %f", &vertex.x, &vertex.y, &vertex.z) != 3) {
-        fprintf(stderr, "Failed to read vertex position: %s, line %zu\n", path, line_number);
+      Vec3 pos;
+      if (sscanf(&line[2], "%f %f %f", &pos.x, &pos.y, &pos.z) != 3) {
+        fprintf(stderr, "Failed to read position: %s, line %zu\n", path, line_number);
         return false;
       }
-      dyn_list_add(&model->vertices, &vertex);
+      dyn_list_add(&model->positions, &pos);
       continue;
     }
 
@@ -56,11 +56,11 @@ bool model_load(Model* model, const char* path, bool initialize)
       continue;
     }
 
-    // Vertex normal
+    // Normal
     if (strncmp(line, "vn ", 3) == 0) {
       Vec3 normal;
       if (sscanf(&line[2], "%f %f %f", &normal.x, &normal.y, &normal.z) != 3) {
-        fprintf(stderr, "Failed to read vertex normal: %s, line %zu\n", path, line_number);
+        fprintf(stderr, "Failed to read normal: %s, line %zu\n", path, line_number);
         return false;
       }
       dyn_list_add(&model->normals, &normal);
@@ -80,28 +80,35 @@ bool model_load(Model* model, const char* path, bool initialize)
       for (size_t i = 0; i < 3; i++) {
         char* ptr = elem_strs[i];
 
-        // Read vertex index
-        const char* vertex_index = strsep(&ptr, "/");
-        if (vertex_index == NULL) {
-          fprintf(stderr, "Failed to read face vertex index: %s, line %zu\n", path, line_number);
+        // Read position index
+        const char* pos_index = strsep(&ptr, "/");
+        if (pos_index == NULL) {
+          fprintf(stderr, "Failed to read face position index: %s, line %zu\n", path, line_number);
           return false;
         }
-        sscanf(vertex_index, "%zu", &face.elements[i].vertex_index);
+        sscanf(pos_index, "%zu", &face.elements[i].pos_index);
+        face.elements[i].pos_index--;  // Make zero-based
 
         // Read (optional) texture coordinate index
         const char* uv_index = strsep(&ptr, "/");
         if (uv_index == NULL || uv_index[0] == '\0') {
+          face.elements[i].has_uv = false;
           face.elements[i].uv_index = 0;
         } else {
+          face.elements[i].has_uv = true;
           sscanf(uv_index, "%zu", &face.elements[i].uv_index);
+          face.elements[i].uv_index--;  // Make zero-based
         }
 
-        // Read (optional) vertex normal index
+        // Read (optional) normal index
         const char* normal_index = strsep(&ptr, "/");
         if (normal_index == NULL || normal_index[0] == '\0') {
+          face.elements[i].has_normal = false;
           face.elements[i].normal_index = 0;
         } else {
+          face.elements[i].has_normal = true;
           sscanf(normal_index, "%zu", &face.elements[i].normal_index);
+          face.elements[i].normal_index--;  // Make zero-based
         }
       }
 
@@ -117,7 +124,7 @@ bool model_load(Model* model, const char* path, bool initialize)
 void model_destroy(Model* model)
 {
   dyn_list_destroy(&model->faces);
-  dyn_list_destroy(&model->vertices);
+  dyn_list_destroy(&model->positions);
   dyn_list_destroy(&model->uvs);
   dyn_list_destroy(&model->normals);
 }
@@ -128,10 +135,10 @@ const Face* model_get_face(const Model* model, size_t index)
   return (Face*)dyn_list_at(&model->faces, index);
 }
 
-const Vec3* model_get_vertex(const Model* model, size_t index)
+const Vec3* model_get_position(const Model* model, size_t index)
 {
-  assert(index < model->vertices.size);
-  return (Vec3*)dyn_list_at(&model->vertices, index);
+  assert(index < model->positions.size);
+  return (Vec3*)dyn_list_at(&model->positions, index);
 }
 
 const Vec2* model_get_uv(const Model* model, size_t index)

@@ -2,23 +2,21 @@
 #define MESH_H_
 
 #include "dynlist.h"
+#include "vector.h"
 
-#include <stddef.h>
 #include <stdbool.h>
 
 typedef struct
 {
-  size_t pos_index;
-  size_t uv_index;
-  size_t normal_index;
+  Vec3 pos;
+  Vec2 uv;
+  Vec3 normal;
 } MeshVertex;
 
 typedef struct
 {
   DynList vertices;
-  DynList positions;
-  DynList uvs;
-  DynList normals;
+  DynList indices;
 } Mesh;
 
 void mesh_init(Mesh* mesh);

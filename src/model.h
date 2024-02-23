@@ -9,10 +9,11 @@
 
 typedef struct
 {
-  // All indices are 1-based. A value of 0 indicates no corresponding index.
-  size_t vertex_index;
-  size_t uv_index;  // optional
-  size_t normal_index;  // optional
+  size_t pos_index;
+  size_t uv_index;
+  size_t normal_index;
+  bool has_uv;
+  bool has_normal;
 } FaceElement;
 
 typedef struct
@@ -23,7 +24,7 @@ typedef struct
 typedef struct
 {
   DynList faces;
-  DynList vertices;
+  DynList positions;
   DynList uvs;
   DynList normals;
 } Model;
@@ -32,7 +33,7 @@ bool model_load(Model* model, const char* path, bool initialize);
 void model_init(Model* model);
 void model_destroy(Model* model);
 const Face* model_get_face(const Model* model, size_t index);
-const Vec3* model_get_vertex(const Model* model, size_t index);
+const Vec3* model_get_position(const Model* model, size_t index);
 const Vec2* model_get_uv(const Model* model, size_t index);
 const Vec3* model_get_normal(const Model* model, size_t index);
 

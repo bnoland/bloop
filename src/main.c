@@ -1,7 +1,6 @@
 #include "graphics.h"
 #include "mesh.h"
 #include "pipeline.h"
-#include "dynlist.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -47,20 +46,6 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  DynList vertices;
-  dyn_list_init(&vertices, sizeof(Vertex));
-  for (size_t i = 0; i < mesh.positions.size; i++) {
-    Vertex vertex = { .pos = *(Vec3*)dyn_list_at(&mesh.positions, i) };
-    dyn_list_add(&vertices, &vertex);
-  }
-
-  DynList indices;
-  dyn_list_init(&indices, sizeof(size_t));
-  for (size_t i = 0; i < mesh.vertices.size; i++) {
-    const MeshVertex* mesh_vert = (MeshVertex*)dyn_list_at(&mesh.vertices, i);
-    dyn_list_add(&indices, &mesh_vert->pos_index);
-  }
-
   Graphics graphics;
   graphics_init(&graphics, screen_width, screen_height);
 
@@ -80,16 +65,13 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    pipeline_draw(&pipeline, &vertices, &indices);
+    // pipeline_draw(&pipeline, &vertices, &indices);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
     SDL_RenderCopy(renderer, screen_texture, NULL, NULL);
     SDL_RenderPresent(renderer);
   }
-
-  dyn_list_destroy(&vertices);
-  dyn_list_destroy(&indices);
 
   graphics_destroy(&graphics);
   mesh_destroy(&mesh);
