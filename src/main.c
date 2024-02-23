@@ -65,7 +65,7 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    // pipeline_draw(&pipeline, &vertices, &indices);
+    pipeline_draw(&pipeline, &mesh);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));

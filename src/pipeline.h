@@ -1,9 +1,9 @@
 #ifndef PIPELINE_H_
 #define PIPELINE_H_
 
-#include "dynlist.h"
 #include "graphics.h"
 #include "vertex.h"
+#include "mesh.h"
 
 #include <stddef.h>
 
@@ -24,6 +24,6 @@ void pipeline_init(Pipeline* pipeline,
                    VertexShaderFunction vertex_shader,
                    GeometryShaderFunction geom_shader,
                    PixelShaderFunction pixel_shader);
-void pipeline_draw(Pipeline* pipeline, const DynList* vertices, const DynList* indices);
+void pipeline_draw(Pipeline* pipeline, const Mesh* mesh);
 
 #endif
