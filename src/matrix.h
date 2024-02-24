@@ -3,6 +3,8 @@
 
 #include "vector.h"
 
+// XXX: Make these functions return matrices rather than storing result in `dest`?
+
 typedef struct
 {
   float elements[3][3];

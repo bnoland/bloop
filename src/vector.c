@@ -75,6 +75,14 @@ float vec3_dot(const Vec3* v, const Vec3* w)
   return v->x * w->x + v->y * w->y + v->z * w->z;
 }
 
+void vec4_from_vec3(Vec4* dest, const Vec3* v, float w)
+{
+  dest->x = v->x;
+  dest->y = v->y;
+  dest->z = v->z;
+  dest->w = w;
+}
+
 void vec4_add(Vec4* dest, const Vec4* v, const Vec4* w)
 {
   dest->x = v->x + w->x;
@@ -97,4 +105,20 @@ void vec4_mul(Vec4* dest, const Vec4* v, float c)
   dest->y = v->y * c;
   dest->z = v->z * c;
   dest->w = v->w * c;
+}
+
+void vec4_mul_add(Vec4* dest, const Vec4* v, const Vec4* w, float c)
+{
+  dest->x = v->x + c * w->x;
+  dest->y = v->y + c * w->y;
+  dest->z = v->z + c * w->z;
+  dest->w = v->w + c * w->w;
+}
+
+void vec4_interpolate(Vec4* dest, const Vec4* v, const Vec4* w, float alpha)
+{
+  dest->x = (1.0f - alpha) * v->x + alpha * w->x;
+  dest->y = (1.0f - alpha) * v->y + alpha * w->y;
+  dest->z = (1.0f - alpha) * v->z + alpha * w->z;
+  dest->w = (1.0f - alpha) * v->w + alpha * w->w;
 }

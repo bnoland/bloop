@@ -6,7 +6,7 @@
 
 typedef struct
 {
-  Vec3 pos;
+  Vec4 pos;
   Vec2 uv;
   Vec3 normal;
 } Vertex;

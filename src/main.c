@@ -1,12 +1,22 @@
 #include "graphics.h"
 #include "mesh.h"
 #include "simple_pipeline.h"
+#include "matrix.h"
+#include "utility.h"
 
 #include <SDL.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
+static void make_cube_mesh(Mesh* mesh, float side);
 static void vertex_shader(const Vertex* in, Vertex* out);
+void geom_shader(const Vertex* in0,
+                 const Vertex* in1,
+                 const Vertex* in2,
+                 Vertex* out0,
+                 Vertex* out1,
+                 Vertex* out2,
+                 size_t triangle_index);
 
 int main(void)
 {
@@ -43,10 +53,7 @@ int main(void)
   }
 
   Mesh mesh;
-  if (!mesh_load_from_file(&mesh, "resources/suzanne.obj", true, false, true)) {
-    fprintf(stderr, "Failed to load mesh.\n");
-    return EXIT_FAILURE;
-  }
+  make_cube_mesh(&mesh, 1.0f);
 
   Graphics graphics;
   graphics_init(&graphics, screen_width, screen_height);
@@ -86,9 +93,73 @@ int main(void)
   return EXIT_SUCCESS;
 }
 
+static void make_cube_mesh(Mesh* mesh, float side)
+{
+  const float half_side = side / 2.0f;
+
+  // XXX: Get rid of the stupid warnings about missing braces.
+  const MeshVertex vertices[] = {
+    // Near side
+    { .pos = { -half_side, -half_side, -half_side } },
+    { .pos = { half_side, -half_side, -half_side } },
+    { .pos = { -half_side, half_side, -half_side } },
+    { .pos = { half_side, half_side, -half_side } },
+
+    // Far side
+    { .pos = { -half_side, -half_side, half_side } },
+    { .pos = { half_side, -half_side, half_side } },
+    { .pos = { -half_side, half_side, half_side } },
+    { .pos = { half_side, half_side, half_side } },
+
+    // Left side
+    { .pos = { -half_side, -half_side, -half_side } },
+    { .pos = { -half_side, half_side, -half_side } },
+    { .pos = { -half_side, -half_side, half_side } },
+    { .pos = { -half_side, half_side, half_side } },
+
+    // Right side
+    { .pos = { half_side, -half_side, -half_side } },
+    { .pos = { half_side, half_side, -half_side } },
+    { .pos = { half_side, -half_side, half_side } },
+    { .pos = { half_side, half_side, half_side } },
+
+    // Bottom side
+    { .pos = { -half_side, -half_side, -half_side } },
+    { .pos = { half_side, -half_side, -half_side } },
+    { .pos = { -half_side, -half_side, half_side } },
+    { .pos = { half_side, -half_side, half_side } },
+
+    // Top side
+    { .pos = { -half_side, half_side, -half_side } },
+    { .pos = { half_side, half_side, -half_side } },
+    { .pos = { -half_side, half_side, half_side } },
+    { .pos = { half_side, half_side, half_side } },
+  };
+
+  const size_t indices[] = {
+    0,  2,  1,  2,  3,  1,  4,  5,  7,  4,  7,  6,  8,  10, 9,  10, 11, 9,
+    12, 13, 15, 12, 15, 14, 16, 17, 18, 18, 17, 19, 20, 23, 21, 20, 22, 23,
+  };
+
+  const size_t num_vertices = 24;
+  const size_t num_indices = 36;
+
+  mesh_load_from_arrays(mesh, true, vertices, num_vertices, indices, num_indices);
+}
+
 static void vertex_shader(const Vertex* in, Vertex* out)
 {
-  out->pos.x = in->pos.x / 2.0f;
-  out->pos.y = in->pos.y / 2.0f;
-  out->pos.z = in->pos.z;
+  Mat4 rotation;
+  mat4_rotation_y(&rotation, M_PI / 4.0f);
+
+  Mat4 translation;
+  mat4_translation(&translation, 0.0f, 0.0f, -2.0f);
+
+  Mat4 transform;
+  mat4_mul(&transform, &translation, &rotation);
+
+  mat4_vec_mul(&out->pos, &transform, &in->pos);
+
+  out->pos.x /= -out->pos.z;
+  out->pos.y /= -out->pos.z;
 }

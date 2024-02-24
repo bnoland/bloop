@@ -21,6 +21,12 @@ typedef struct
 
 void mesh_init(Mesh* mesh);
 void mesh_destroy(Mesh* mesh);
+void mesh_load_from_arrays(Mesh* mesh,
+                           bool initialize,
+                           const MeshVertex vertices[],
+                           size_t num_vertices,
+                           const size_t indices[],
+                           size_t num_indices);
 bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals);
 
 #endif

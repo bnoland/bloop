@@ -1,6 +1,8 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+// XXX: Make these functions return vectors rather than storing result in `dest`?
+
 typedef struct
 {
   union
@@ -57,8 +59,11 @@ typedef struct
   };
 } Vec4;
 
+void vec4_from_vec3(Vec4* dest, const Vec3* v, float w);
 void vec4_add(Vec4* dest, const Vec4* v, const Vec4* w);
 void vec4_sub(Vec4* dest, const Vec4* v, const Vec4* w);
 void vec4_mul(Vec4* dest, const Vec4* v, float c);
+void vec4_mul_add(Vec4* dest, const Vec4* v, const Vec4* w, float c);
+void vec4_interpolate(Vec4* dest, const Vec4* v, const Vec4* w, float alpha);
 
 #endif

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <tgmath.h>
+#include <stdbool.h>
 
 static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
                                                const Vec3* p0,
@@ -22,7 +23,8 @@ static void graphics_draw_triangle_flat(Graphics* graphics,
                                         float height,
                                         Color color);
 
-static void swap(const Vec3** v, const Vec3** w);
+static void swap_vec_ptrs(const Vec3** v, const Vec3** w);
+static void swap_ints(int* x, int* y);
 
 void graphics_init(Graphics* graphics, int screen_width, int screen_height)
 {
@@ -57,11 +59,57 @@ void graphics_clear(Graphics* graphics, Color color)
   }
 }
 
+void graphics_draw_line(Graphics* graphics, const Vec3* p0, const Vec3* p1, Color color)
+{
+  int x0 = p0->x;
+  int y0 = p0->y;
+  int x1 = p1->x;
+  int y1 = p1->y;
+
+  bool steep = false;
+  if (abs(y1 - y0) > abs(x1 - x0)) {
+    swap_ints(&x0, &y0);
+    swap_ints(&x1, &y1);
+    steep = true;
+  }
+  if (x1 < x0) {
+    swap_ints(&x0, &x1);
+    swap_ints(&y0, &y1);
+  }
+
+  const int dx = x1 - x0;
+  const int dy = y1 - y0;
+  const int derror = 2 * abs(dy);
+  const int y_inc = y1 > y0 ? 1 : -1;
+  int error = 0;
+  int y = y0;
+
+  if (steep) {
+    for (int x = x0; x <= x1; x++) {
+      graphics_set_pixel(graphics, y, x, color);
+      error += derror;
+      if (error >= dx) {
+        y += y_inc;
+        error -= 2 * dx;
+      }
+    }
+  } else {
+    for (int x = x0; x <= x1; x++) {
+      graphics_set_pixel(graphics, x, y, color);
+      error += derror;
+      if (error >= dx) {
+        y += y_inc;
+        error -= 2 * dx;
+      }
+    }
+  }
+}
+
 void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
-  if (p0->y > p1->y) swap(&p0, &p1);
-  if (p0->y > p2->y) swap(&p0, &p2);
-  if (p1->y > p2->y) swap(&p1, &p2);
+  if (p0->y > p1->y) swap_vec_ptrs(&p0, &p1);
+  if (p0->y > p2->y) swap_vec_ptrs(&p0, &p2);
+  if (p1->y > p2->y) swap_vec_ptrs(&p1, &p2);
 
   Vec3 q;
   vec3_interpolate(&q, p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
@@ -150,9 +198,16 @@ static void graphics_draw_triangle_flat(Graphics* graphics,
   }
 }
 
-static void swap(const Vec3** v, const Vec3** w)
+static void swap_vec_ptrs(const Vec3** v, const Vec3** w)
 {
   const Vec3* temp = *v;
   *v = *w;
   *w = temp;
+}
+
+static void swap_ints(int* x, int* y)
+{
+  const int temp = *x;
+  *x = *y;
+  *y = temp;
 }

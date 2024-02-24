@@ -127,7 +127,7 @@ void mat4_rotation_y(Mat4* dest, float angle)
   const double sin_angle = sin(angle);
 
   dest->elements[0][0] = cos_angle;
-  dest->elements[0][3] = sin_angle;
+  dest->elements[0][2] = sin_angle;
   dest->elements[2][0] = -sin_angle;
   dest->elements[2][2] = cos_angle;
 }

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <assert.h>
 
 static bool face_elements_equal(const void* a, const void* b);
 
@@ -17,6 +18,26 @@ void mesh_destroy(Mesh* mesh)
 {
   dyn_list_destroy(&mesh->vertices);
   dyn_list_destroy(&mesh->indices);
+}
+
+void mesh_load_from_arrays(Mesh* mesh,
+                           bool initialize,
+                           const MeshVertex vertices[],
+                           size_t num_vertices,
+                           const size_t indices[],
+                           size_t num_indices)
+{
+  assert(num_indices % 3 == 0);
+
+  if (initialize) mesh_init(mesh);
+
+  for (size_t i = 0; i < num_vertices; i++) {
+    dyn_list_add(&mesh->vertices, &vertices[i]);
+  }
+
+  for (size_t i = 0; i < num_indices; i++) {
+    dyn_list_add(&mesh->indices, &indices[i]);
+  }
 }
 
 bool mesh_load_from_file(Mesh* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals)
