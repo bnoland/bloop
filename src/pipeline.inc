@@ -101,16 +101,6 @@ static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
 
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
-static void default_vertex_shader(const VERTEX* in, VS_OUT* out);
-static void default_geom_shader(const VS_OUT* in0,
-                                const VS_OUT* in1,
-                                const VS_OUT* in2,
-                                GS_OUT* out0,
-                                GS_OUT* out1,
-                                GS_OUT* out2,
-                                size_t triangle_index);
-static Color default_pixel_shader(const GS_OUT* in);
-
 void PIPELINE_PREFIX(pipeline_init)(PIPELINE* pipeline,
                                     Graphics* graphics,
                                     VERTEX_SHADER vertex_shader,
@@ -118,9 +108,9 @@ void PIPELINE_PREFIX(pipeline_init)(PIPELINE* pipeline,
                                     PIXEL_SHADER pixel_shader)
 {
   pipeline->graphics = graphics;
-  pipeline->vertex_shader = (vertex_shader == NULL) ? default_vertex_shader : vertex_shader;
-  pipeline->geom_shader = (geom_shader == NULL) ? default_geom_shader : geom_shader;
-  pipeline->pixel_shader = (pixel_shader == NULL) ? default_pixel_shader : pixel_shader;
+  pipeline->vertex_shader = vertex_shader;
+  pipeline->geom_shader = geom_shader;
+  pipeline->pixel_shader = pixel_shader;
 }
 
 void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh)
@@ -261,31 +251,6 @@ static void swap(const GS_OUT** v, const GS_OUT** w)
   const GS_OUT* temp = *v;
   *v = *w;
   *w = temp;
-}
-
-static void default_vertex_shader(const VERTEX* in, VS_OUT* out)
-{
-  out->pos = in->pos;
-}
-
-static void default_geom_shader(const VS_OUT* in0,
-                                const VS_OUT* in1,
-                                const VS_OUT* in2,
-                                GS_OUT* out0,
-                                GS_OUT* out1,
-                                GS_OUT* out2,
-                                size_t triangle_index)
-{
-  (void)triangle_index;
-  out0->pos = in0->pos;
-  out1->pos = in1->pos;
-  out2->pos = in2->pos;
-}
-
-static Color default_pixel_shader(const GS_OUT* in)
-{
-  (void)in;
-  return 0xffffffff;
 }
 
 #endif

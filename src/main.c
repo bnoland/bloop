@@ -9,14 +9,15 @@
 #include <stdbool.h>
 
 static void make_cube_mesh(SimpleMesh* mesh, float side);
-static void vertex_shader(const Vertex* in, Vertex* out);
-void geom_shader(const Vertex* in0,
-                 const Vertex* in1,
-                 const Vertex* in2,
-                 Vertex* out0,
-                 Vertex* out1,
-                 Vertex* out2,
+static void vertex_shader(const Vertex* in, VSOut* out);
+void geom_shader(const VSOut* in0,
+                 const VSOut* in1,
+                 const VSOut* in2,
+                 GSOut* out0,
+                 GSOut* out1,
+                 GSOut* out2,
                  size_t triangle_index);
+Color pixel_shader(const GSOut* in);
 
 int main(void)
 {
@@ -59,7 +60,7 @@ int main(void)
   graphics_init(&graphics, screen_width, screen_height);
 
   SimplePipeline pipeline;
-  simple_pipeline_init(&pipeline, &graphics, vertex_shader, NULL, NULL);
+  simple_pipeline_init(&pipeline, &graphics, vertex_shader, geom_shader, pixel_shader);
 
   while (true) {
     SDL_Event event;
@@ -147,7 +148,7 @@ static void make_cube_mesh(SimpleMesh* mesh, float side)
   simple_mesh_load_from_arrays(mesh, true, vertices, num_vertices, indices, num_indices);
 }
 
-static void vertex_shader(const Vertex* in, Vertex* out)
+static void vertex_shader(const Vertex* in, VSOut* out)
 {
   // Mat4 rotation;
   // mat4_rotation_y(&rotation, M_PI / 4.0f);
@@ -162,4 +163,27 @@ static void vertex_shader(const Vertex* in, Vertex* out)
 
   // out->pos.x /= -out->pos.z;
   // out->pos.y /= -out->pos.z;
+
+  out->pos.x = in->pos.x;
+  out->pos.y = in->pos.y;
+  out->pos.z = in->pos.z;
+  out->pos.w = 1.0f;
+}
+
+void geom_shader(const VSOut* in0,
+                 const VSOut* in1,
+                 const VSOut* in2,
+                 GSOut* out0,
+                 GSOut* out1,
+                 GSOut* out2,
+                 size_t triangle_index)
+{
+  out0->pos = in0->pos;
+  out1->pos = in1->pos;
+  out2->pos = in2->pos;
+}
+
+Color pixel_shader(const GSOut* in)
+{
+  return 0xffffffff;
 }

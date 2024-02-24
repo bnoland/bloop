@@ -8,7 +8,7 @@
 
 #define MESH_VERTEX_TYPE        Vertex
 #define MESH_VERTEX_HAS_UVS     false
-#define MESH_VERTEX_HAS_NORMALS true
+#define MESH_VERTEX_HAS_NORMALS false
 
 #include "mesh.inc"
 
