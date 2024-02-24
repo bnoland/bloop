@@ -69,7 +69,7 @@ IncludeIsMainRegex: (Test)?$
 IndentCaseLabels: true
 IndentWidth: 2
 IndentWrappedFunctionNames: false
-IndentPPDirectives: None
+IndentPPDirectives: None  # For my sanity in the .inc files.
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: true

@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-// XXX: Can we mimic C++ templates using `_Generic` and preprocessor shenanigans?
-
 typedef struct
 {
   unsigned char* buffer;
