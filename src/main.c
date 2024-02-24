@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include "mesh.h"
+#include "simple_mesh.h"
 #include "simple_pipeline.h"
 #include "matrix.h"
 #include "utility.h"
@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-static void make_cube_mesh(Mesh* mesh, float side);
+static void make_cube_mesh(SimpleMesh* mesh, float side);
 static void vertex_shader(const Vertex* in, Vertex* out);
 void geom_shader(const Vertex* in0,
                  const Vertex* in1,
@@ -52,7 +52,7 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  Mesh mesh;
+  SimpleMesh mesh;
   make_cube_mesh(&mesh, 1.0f);
 
   Graphics graphics;
@@ -83,7 +83,7 @@ int main(void)
   }
 
   graphics_destroy(&graphics);
-  mesh_destroy(&mesh);
+  simple_mesh_destroy(&mesh);
 
   SDL_DestroyTexture(screen_texture);
   SDL_DestroyRenderer(renderer);
@@ -93,12 +93,12 @@ int main(void)
   return EXIT_SUCCESS;
 }
 
-static void make_cube_mesh(Mesh* mesh, float side)
+static void make_cube_mesh(SimpleMesh* mesh, float side)
 {
   const float half_side = side / 2.0f;
 
   // XXX: Get rid of the stupid warnings about missing braces.
-  const MeshVertex vertices[] = {
+  const Vertex vertices[] = {
     // Near side
     { .pos = { -half_side, -half_side, -half_side } },
     { .pos = { half_side, -half_side, -half_side } },
@@ -144,22 +144,22 @@ static void make_cube_mesh(Mesh* mesh, float side)
   const size_t num_vertices = 24;
   const size_t num_indices = 36;
 
-  mesh_load_from_arrays(mesh, true, vertices, num_vertices, indices, num_indices);
+  simple_mesh_load_from_arrays(mesh, true, vertices, num_vertices, indices, num_indices);
 }
 
 static void vertex_shader(const Vertex* in, Vertex* out)
 {
-  Mat4 rotation;
-  mat4_rotation_y(&rotation, M_PI / 4.0f);
+  // Mat4 rotation;
+  // mat4_rotation_y(&rotation, M_PI / 4.0f);
 
-  Mat4 translation;
-  mat4_translation(&translation, 0.0f, 0.0f, -2.0f);
+  // Mat4 translation;
+  // mat4_translation(&translation, 0.0f, 0.0f, -2.0f);
 
-  Mat4 transform;
-  mat4_mul(&transform, &translation, &rotation);
+  // Mat4 transform;
+  // mat4_mul(&transform, &translation, &rotation);
 
-  mat4_vec_mul(&out->pos, &transform, &in->pos);
+  // mat4_vec_mul(&out->pos, &transform, &in->pos);
 
-  out->pos.x /= -out->pos.z;
-  out->pos.y /= -out->pos.z;
+  // out->pos.x /= -out->pos.z;
+  // out->pos.y /= -out->pos.z;
 }

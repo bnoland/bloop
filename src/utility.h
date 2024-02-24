@@ -5,7 +5,7 @@
 
 // `M_PI` is not guaranteed to be defined by the C standard.
 #ifndef M_PI
-  #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
 static inline float degrees_to_radians(float degrees)

@@ -1,46 +1,42 @@
 
 // Bail if we're missing any of the required parameters.
 #ifndef PIPELINE_TYPE_PREFIX
-  #error "PIPELINE_TYPE_PREFIX is undefined"
+#error "PIPELINE_TYPE_PREFIX is undefined"
 #endif
 #ifndef PIPELINE_FUNCTION_PREFIX
-  #error "PIPELINE_FUNCTION_PREFIX is undefined"
+#error "PIPELINE_FUNCTION_PREFIX is undefined"
 #endif
 #ifndef PIPELINE_VERTEX_TYPE
-  #error "PIPELINE_VERTEX_TYPE is undefined"
+#error "PIPELINE_VERTEX_TYPE is undefined"
 #endif
 #ifndef PIPELINE_VS_OUT_TYPE
-  #error "PIPELINE_VS_OUT_TYPE is undefined"
+#error "PIPELINE_VS_OUT_TYPE is undefined"
 #endif
 #ifndef PIPELINE_GS_OUT_TYPE
-  #error "PIPELINE_GS_OUT_TYPE is undefined"
-#endif
-#ifndef VERTEX_INIT
-  #error "VERTEX_INIT is undefined"
+#error "PIPELINE_GS_OUT_TYPE is undefined"
 #endif
 #ifndef GS_OUT_ADD
-  #error "GS_OUT_ADD is undefined"
+#error "GS_OUT_ADD is undefined"
 #endif
 #ifndef GS_OUT_SUB
-  #error "GS_OUT_SUB is undefined"
+#error "GS_OUT_SUB is undefined"
 #endif
 #ifndef GS_OUT_MUL
-  #error "GS_OUT_MUL is undefined"
+#error "GS_OUT_MUL is undefined"
 #endif
 #ifndef GS_OUT_MUL_ADD
-  #error "GS_OUT_MUL_ADD is undefined"
+#error "GS_OUT_MUL_ADD is undefined"
 #endif
 #ifndef GS_OUT_INTERPOLATE
-  #error "GS_OUT_INTERPOLATE is undefined"
+#error "GS_OUT_INTERPOLATE is undefined"
+#endif
+#ifndef PIPELINE_MESH_TYPE
+#error "PIPELINE_MESH_TYPE is undefined"
 #endif
 
 #ifndef PIPELINE_IMPLEMENTATION
 
-// Prevent clang-format from indenting the macros in the #ifndef.
-// clang-format off
-
 #include "graphics.h"
-#include "mesh.h"
 
 #include <stddef.h>
 #include <tgmath.h>
@@ -48,7 +44,7 @@
 #define _CONCAT(x, y) x##y
 #define CONCAT(x, y)  _CONCAT(x, y)
 
-#define PIPELINE_EXTERNAL_FUNCTION(name) CONCAT(PIPELINE_FUNCTION_PREFIX, name)
+#define PIPELINE_PREFIX(name) CONCAT(PIPELINE_FUNCTION_PREFIX, name)
 
 #define PIPELINE CONCAT(PIPELINE_TYPE_PREFIX, Pipeline)
 
@@ -59,8 +55,7 @@
 #define VERTEX PIPELINE_VERTEX_TYPE
 #define VS_OUT PIPELINE_VS_OUT_TYPE
 #define GS_OUT PIPELINE_GS_OUT_TYPE
-
-// clang-format on
+#define MESH   PIPELINE_MESH_TYPE
 
 typedef void (*VERTEX_SHADER)(const VERTEX* in, VS_OUT* out);
 typedef void (*GEOM_SHADER)(const VS_OUT* in0,
@@ -80,12 +75,12 @@ typedef struct
   PIXEL_SHADER pixel_shader;
 } PIPELINE;
 
-void PIPELINE_EXTERNAL_FUNCTION(pipeline_init)(PIPELINE* pipeline,
-                                               Graphics* graphics,
-                                               VERTEX_SHADER vertex_shader,
-                                               GEOM_SHADER geom_shader,
-                                               PIXEL_SHADER pixel_shader);
-void PIPELINE_EXTERNAL_FUNCTION(pipeline_draw)(PIPELINE* pipeline, const Mesh* mesh);
+void PIPELINE_PREFIX(pipeline_init)(PIPELINE* pipeline,
+                                    Graphics* graphics,
+                                    VERTEX_SHADER vertex_shader,
+                                    GEOM_SHADER geom_shader,
+                                    PIXEL_SHADER pixel_shader);
+void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh);
 
 #else
 
@@ -116,11 +111,11 @@ static void default_geom_shader(const VS_OUT* in0,
                                 size_t triangle_index);
 static Color default_pixel_shader(const GS_OUT* in);
 
-void PIPELINE_EXTERNAL_FUNCTION(pipeline_init)(PIPELINE* pipeline,
-                                               Graphics* graphics,
-                                               VERTEX_SHADER vertex_shader,
-                                               GEOM_SHADER geom_shader,
-                                               PIXEL_SHADER pixel_shader)
+void PIPELINE_PREFIX(pipeline_init)(PIPELINE* pipeline,
+                                    Graphics* graphics,
+                                    VERTEX_SHADER vertex_shader,
+                                    GEOM_SHADER geom_shader,
+                                    PIXEL_SHADER pixel_shader)
 {
   pipeline->graphics = graphics;
   pipeline->vertex_shader = (vertex_shader == NULL) ? default_vertex_shader : vertex_shader;
@@ -128,16 +123,15 @@ void PIPELINE_EXTERNAL_FUNCTION(pipeline_init)(PIPELINE* pipeline,
   pipeline->pixel_shader = (pixel_shader == NULL) ? default_pixel_shader : pixel_shader;
 }
 
-void PIPELINE_EXTERNAL_FUNCTION(pipeline_draw)(PIPELINE* pipeline, const Mesh* mesh)
+void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh)
 {
   DynList trans_verts;
   dyn_list_init(&trans_verts, sizeof(VS_OUT));
 
   for (size_t i = 0; i < mesh->vertices.size; i++) {
-    VERTEX v;
-    VERTEX_INIT(&v, dyn_list_at(&mesh->vertices, i));
+    const VERTEX* v = dyn_list_at(&mesh->vertices, i);
     VS_OUT* vs = dyn_list_add_slot(&trans_verts);
-    pipeline->vertex_shader(&v, vs);
+    pipeline->vertex_shader(v, vs);
   }
 
   for (size_t i = 0; i < mesh->indices.size / 3; i++) {
