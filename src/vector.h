@@ -59,7 +59,6 @@ typedef struct
   };
 } Vec4;
 
-void vec4_from_vec3(Vec4* dest, const Vec3* v, float w);
 void vec4_add(Vec4* dest, const Vec4* v, const Vec4* w);
 void vec4_sub(Vec4* dest, const Vec4* v, const Vec4* w);
 void vec4_mul(Vec4* dest, const Vec4* v, float c);

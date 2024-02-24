@@ -75,14 +75,6 @@ float vec3_dot(const Vec3* v, const Vec3* w)
   return v->x * w->x + v->y * w->y + v->z * w->z;
 }
 
-void vec4_from_vec3(Vec4* dest, const Vec3* v, float w)
-{
-  dest->x = v->x;
-  dest->y = v->y;
-  dest->z = v->z;
-  dest->w = w;
-}
-
 void vec4_add(Vec4* dest, const Vec4* v, const Vec4* w)
 {
   dest->x = v->x + w->x;
