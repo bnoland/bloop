@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-static void make_cube_mesh(SimpleMesh* mesh, float side);
+static SimpleMesh make_cube_mesh(float side);
 static void vertex_shader(const Vertex* in, VSOut* out);
 void geom_shader(const VSOut* in0,
                  const VSOut* in1,
@@ -53,14 +53,11 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  SimpleMesh mesh;
-  make_cube_mesh(&mesh, 1.0f);
+  SimpleMesh mesh = make_cube_mesh(1.0f);
 
-  Graphics graphics;
-  graphics_init(&graphics, screen_width, screen_height);
+  Graphics graphics = graphics_make(screen_width, screen_height);
 
-  SimplePipeline pipeline;
-  simple_pipeline_init(&pipeline, &graphics, vertex_shader, geom_shader, pixel_shader);
+  SimplePipeline pipeline = simple_pipeline_make(&graphics, vertex_shader, geom_shader, pixel_shader);
 
   while (true) {
     SDL_Event event;
@@ -94,47 +91,46 @@ int main(void)
   return EXIT_SUCCESS;
 }
 
-static void make_cube_mesh(SimpleMesh* mesh, float side)
+static SimpleMesh make_cube_mesh(float side)
 {
   const float half_side = side / 2.0f;
 
-  // XXX: Get rid of the stupid warnings about missing braces.
   const Vertex vertices[] = {
     // Near side
-    { .pos = { -half_side, -half_side, -half_side } },
-    { .pos = { half_side, -half_side, -half_side } },
-    { .pos = { -half_side, half_side, -half_side } },
-    { .pos = { half_side, half_side, -half_side } },
+    { .pos = vec3_make(-half_side, -half_side, -half_side) },
+    { .pos = vec3_make(half_side, -half_side, -half_side) },
+    { .pos = vec3_make(-half_side, half_side, -half_side) },
+    { .pos = vec3_make(half_side, half_side, -half_side) },
 
     // Far side
-    { .pos = { -half_side, -half_side, half_side } },
-    { .pos = { half_side, -half_side, half_side } },
-    { .pos = { -half_side, half_side, half_side } },
-    { .pos = { half_side, half_side, half_side } },
+    { .pos = vec3_make(-half_side, -half_side, half_side) },
+    { .pos = vec3_make(half_side, -half_side, half_side) },
+    { .pos = vec3_make(-half_side, half_side, half_side) },
+    { .pos = vec3_make(half_side, half_side, half_side) },
 
     // Left side
-    { .pos = { -half_side, -half_side, -half_side } },
-    { .pos = { -half_side, half_side, -half_side } },
-    { .pos = { -half_side, -half_side, half_side } },
-    { .pos = { -half_side, half_side, half_side } },
+    { .pos = vec3_make(-half_side, -half_side, -half_side) },
+    { .pos = vec3_make(-half_side, half_side, -half_side) },
+    { .pos = vec3_make(-half_side, -half_side, half_side) },
+    { .pos = vec3_make(-half_side, half_side, half_side) },
 
     // Right side
-    { .pos = { half_side, -half_side, -half_side } },
-    { .pos = { half_side, half_side, -half_side } },
-    { .pos = { half_side, -half_side, half_side } },
-    { .pos = { half_side, half_side, half_side } },
+    { .pos = vec3_make(half_side, -half_side, -half_side) },
+    { .pos = vec3_make(half_side, half_side, -half_side) },
+    { .pos = vec3_make(half_side, -half_side, half_side) },
+    { .pos = vec3_make(half_side, half_side, half_side) },
 
     // Bottom side
-    { .pos = { -half_side, -half_side, -half_side } },
-    { .pos = { half_side, -half_side, -half_side } },
-    { .pos = { -half_side, -half_side, half_side } },
-    { .pos = { half_side, -half_side, half_side } },
+    { .pos = vec3_make(-half_side, -half_side, -half_side) },
+    { .pos = vec3_make(half_side, -half_side, -half_side) },
+    { .pos = vec3_make(-half_side, -half_side, half_side) },
+    { .pos = vec3_make(half_side, -half_side, half_side) },
 
     // Top side
-    { .pos = { -half_side, half_side, -half_side } },
-    { .pos = { half_side, half_side, -half_side } },
-    { .pos = { -half_side, half_side, half_side } },
-    { .pos = { half_side, half_side, half_side } },
+    { .pos = vec3_make(-half_side, half_side, -half_side) },
+    { .pos = vec3_make(half_side, half_side, -half_side) },
+    { .pos = vec3_make(-half_side, half_side, half_side) },
+    { .pos = vec3_make(half_side, half_side, half_side) },
   };
 
   const size_t indices[] = {
@@ -145,29 +141,22 @@ static void make_cube_mesh(SimpleMesh* mesh, float side)
   const size_t num_vertices = 24;
   const size_t num_indices = 36;
 
-  simple_mesh_load_from_arrays(mesh, true, vertices, num_vertices, indices, num_indices);
+  SimpleMesh mesh = simple_mesh_make();
+  simple_mesh_load_from_arrays(&mesh, vertices, num_vertices, indices, num_indices);
+  return mesh;
 }
 
 static void vertex_shader(const Vertex* in, VSOut* out)
 {
-  // Mat4 rotation;
-  // mat4_rotation_y(&rotation, M_PI / 4.0f);
+  Mat4 rotation = mat4_rotation_y(M_PI / 4);
+  Mat4 translation = mat4_translation(0.0f, 0.0f, -2.0f);
+  Mat4 transform = mat4_mul(&translation, &rotation);
 
-  // Mat4 translation;
-  // mat4_translation(&translation, 0.0f, 0.0f, -2.0f);
+  Vec4 in_pos = vec4_make(in->pos.x, in->pos.y, in->pos.z, 1.0f);
+  out->pos = mat4_vec_mul(&transform, &in_pos);
 
-  // Mat4 transform;
-  // mat4_mul(&transform, &translation, &rotation);
-
-  // mat4_vec_mul(&out->pos, &transform, &in->pos);
-
-  // out->pos.x /= -out->pos.z;
-  // out->pos.y /= -out->pos.z;
-
-  out->pos.x = in->pos.x;
-  out->pos.y = in->pos.y;
-  out->pos.z = in->pos.z;
-  out->pos.w = 1.0f;
+  out->pos.x /= -out->pos.z;
+  out->pos.y /= -out->pos.z;
 }
 
 void geom_shader(const VSOut* in0,
@@ -178,6 +167,7 @@ void geom_shader(const VSOut* in0,
                  GSOut* out2,
                  size_t triangle_index)
 {
+  (void)triangle_index;
   out0->pos = in0->pos;
   out1->pos = in1->pos;
   out2->pos = in2->pos;
@@ -185,5 +175,6 @@ void geom_shader(const VSOut* in0,
 
 Color pixel_shader(const GSOut* in)
 {
+  (void)in;
   return 0xffffffff;
 }

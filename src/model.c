@@ -8,18 +8,26 @@
 #include <string.h>
 #include <assert.h>
 
-void model_init(Model* model)
+Model model_make(void)
 {
-  dyn_list_init(&model->faces, sizeof(Face));
-  dyn_list_init(&model->positions, sizeof(Vec3));
-  dyn_list_init(&model->uvs, sizeof(Vec2));
-  dyn_list_init(&model->normals, sizeof(Vec3));
+  Model model;
+  model.faces = dyn_list_make(sizeof(Face));
+  model.positions = dyn_list_make(sizeof(Vec3));
+  model.uvs = dyn_list_make(sizeof(Vec2));
+  model.normals = dyn_list_make(sizeof(Vec3));
+  return model;
 }
 
-bool model_load(Model* model, const char* path, bool initialize)
+void model_destroy(Model* model)
 {
-  if (initialize) model_init(model);
+  dyn_list_destroy(&model->faces);
+  dyn_list_destroy(&model->positions);
+  dyn_list_destroy(&model->uvs);
+  dyn_list_destroy(&model->normals);
+}
 
+bool model_load_from_file(Model* model, const char* path)
+{
   FILE* input = fopen(path, "r");
   if (input == NULL) {
     fprintf(stderr, "Failed to open model file: %s\n", path);
@@ -119,14 +127,6 @@ bool model_load(Model* model, const char* path, bool initialize)
 
   fclose(input);
   return true;
-}
-
-void model_destroy(Model* model)
-{
-  dyn_list_destroy(&model->faces);
-  dyn_list_destroy(&model->positions);
-  dyn_list_destroy(&model->uvs);
-  dyn_list_destroy(&model->normals);
 }
 
 const Face* model_get_face(const Model* model, size_t index)

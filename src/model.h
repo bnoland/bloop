@@ -29,9 +29,9 @@ typedef struct
   DynList normals;
 } Model;
 
-bool model_load(Model* model, const char* path, bool initialize);
-void model_init(Model* model);
+Model model_make(void);
 void model_destroy(Model* model);
+bool model_load_from_file(Model* model, const char* path);
 const Face* model_get_face(const Model* model, size_t index);
 const Vec3* model_get_position(const Model* model, size_t index);
 const Vec2* model_get_uv(const Model* model, size_t index);

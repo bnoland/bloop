@@ -75,11 +75,10 @@ typedef struct
   PIXEL_SHADER pixel_shader;
 } PIPELINE;
 
-void PIPELINE_PREFIX(pipeline_init)(PIPELINE* pipeline,
-                                    Graphics* graphics,
-                                    VERTEX_SHADER vertex_shader,
-                                    GEOM_SHADER geom_shader,
-                                    PIXEL_SHADER pixel_shader);
+PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics,
+                                        VERTEX_SHADER vertex_shader,
+                                        GEOM_SHADER geom_shader,
+                                        PIXEL_SHADER pixel_shader);
 void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh);
 
 #else
@@ -101,22 +100,22 @@ static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
 
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
-void PIPELINE_PREFIX(pipeline_init)(PIPELINE* pipeline,
-                                    Graphics* graphics,
-                                    VERTEX_SHADER vertex_shader,
-                                    GEOM_SHADER geom_shader,
-                                    PIXEL_SHADER pixel_shader)
+PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics,
+                                        VERTEX_SHADER vertex_shader,
+                                        GEOM_SHADER geom_shader,
+                                        PIXEL_SHADER pixel_shader)
 {
-  pipeline->graphics = graphics;
-  pipeline->vertex_shader = vertex_shader;
-  pipeline->geom_shader = geom_shader;
-  pipeline->pixel_shader = pixel_shader;
+  PIPELINE pipeline;
+  pipeline.graphics = graphics;
+  pipeline.vertex_shader = vertex_shader;
+  pipeline.geom_shader = geom_shader;
+  pipeline.pixel_shader = pixel_shader;
+  return pipeline;
 }
 
 void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh)
 {
-  DynList trans_verts;
-  dyn_list_init(&trans_verts, sizeof(VS_OUT));
+  DynList trans_verts = dyn_list_make(sizeof(VS_OUT));
 
   for (size_t i = 0; i < mesh->vertices.size; i++) {
     const VERTEX* v = dyn_list_at(&mesh->vertices, i);
@@ -162,8 +161,7 @@ static void pipeline_draw_triangle(PIPELINE* pipeline, const GS_OUT* v0, const G
   if (v0->pos.y > v2->pos.y) swap(&v0, &v2);
   if (v1->pos.y > v2->pos.y) swap(&v1, &v2);
 
-  GS_OUT q;
-  GS_OUT_INTERPOLATE(&q, v0, v2, (v1->pos.y - v0->pos.y) / (v2->pos.y - v0->pos.y));
+  GS_OUT q = GS_OUT_INTERPOLATE(v0, v2, (v1->pos.y - v0->pos.y) / (v2->pos.y - v0->pos.y));
 
   if (q.pos.x > v1->pos.x) {
     pipeline_draw_triangle_flat_bottom(pipeline, v0, v1, &q);
@@ -180,14 +178,12 @@ static void pipeline_draw_triangle_flat_bottom(PIPELINE* pipeline, const GS_OUT*
   const float height = v1->pos.y - v0->pos.y;
 
   // (v1 - v0) / height
-  GS_OUT left_inc;
-  GS_OUT_SUB(&left_inc, v1, v0);
-  GS_OUT_MUL(&left_inc, &left_inc, 1.0f / height);
+  GS_OUT left_inc = GS_OUT_SUB(v1, v0);
+  left_inc = GS_OUT_MUL(&left_inc, 1.0f / height);
 
   // (v2 - v0) / height
-  GS_OUT right_inc;
-  GS_OUT_SUB(&right_inc, v2, v0);
-  GS_OUT_MUL(&right_inc, &right_inc, 1.0f / height);
+  GS_OUT right_inc = GS_OUT_SUB(v2, v0);
+  right_inc = GS_OUT_MUL(&right_inc, 1.0f / height);
 
   pipeline_draw_triangle_flat(pipeline, v0, v0, &left_inc, &right_inc, height);
 }
@@ -198,14 +194,12 @@ static void pipeline_draw_triangle_flat_top(PIPELINE* pipeline, const GS_OUT* v0
   const float height = v2->pos.y - v0->pos.y;
 
   // (v2 - v0) / height
-  GS_OUT left_inc;
-  GS_OUT_SUB(&left_inc, v2, v0);
-  GS_OUT_MUL(&left_inc, &left_inc, 1.0f / height);
+  GS_OUT left_inc = GS_OUT_SUB(v2, v0);
+  left_inc = GS_OUT_MUL(&left_inc, 1.0f / height);
 
   // (v2 - v1) / height
-  GS_OUT right_inc;
-  GS_OUT_SUB(&right_inc, v2, v1);
-  GS_OUT_MUL(&right_inc, &right_inc, 1.0f / height);
+  GS_OUT right_inc = GS_OUT_SUB(v2, v1);
+  right_inc = GS_OUT_MUL(&right_inc, 1.0f / height);
 
   pipeline_draw_triangle_flat(pipeline, v0, v1, &left_inc, &right_inc, height);
 }
@@ -217,15 +211,11 @@ static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
                                         const GS_OUT* right_inc,
                                         float height)
 {
-  GS_OUT left = *left_start;
-  GS_OUT right = *right_start;
+  const int y_start = ceil(left_start->pos.y - 0.5f);
+  const int y_end = ceil(left_start->pos.y + height - 0.5f);
 
-  const int y_start = ceil(left.pos.y - 0.5f);
-  const int y_end = ceil(left.pos.y + height - 0.5f);
-
-  // Move to starting positions.
-  GS_OUT_MUL_ADD(&left, &left, left_inc, y_start + 0.5f - left.pos.y);
-  GS_OUT_MUL_ADD(&right, &right, right_inc, y_start + 0.5f - right.pos.y);
+  GS_OUT left = GS_OUT_MUL_ADD(left_start, left_inc, y_start + 0.5f - left_start->pos.y);
+  GS_OUT right = GS_OUT_MUL_ADD(right_start, right_inc, y_start + 0.5f - right_start->pos.y);
 
   for (int y = y_start; y < y_end; y++) {
     const int x_start = ceil(left.pos.x - 0.5f);
@@ -234,15 +224,14 @@ static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
     const float width = right.pos.x - left.pos.x;
 
     for (int x = x_start; x < x_end; x++) {
-      GS_OUT scan;
-      GS_OUT_INTERPOLATE(&scan, &left, &right, (x + 0.5f - left.pos.x) / width);
+      GS_OUT scan = GS_OUT_INTERPOLATE(&left, &right, (x + 0.5f - left.pos.x) / width);
 
       const Color color = pipeline->pixel_shader(&scan);
       graphics_set_pixel(pipeline->graphics, x, y, color);
     }
 
-    GS_OUT_ADD(&left, &left, left_inc);
-    GS_OUT_ADD(&right, &right, right_inc);
+    left = GS_OUT_ADD(&left, left_inc);
+    right = GS_OUT_ADD(&right, right_inc);
   }
 }
 

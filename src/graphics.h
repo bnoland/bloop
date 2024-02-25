@@ -14,7 +14,7 @@ typedef struct
   Color* pixel_buffer;
 } Graphics;
 
-void graphics_init(Graphics* graphics, int screen_width, int screen_height);
+Graphics graphics_make(int screen_width, int screen_height);
 void graphics_destroy(Graphics* graphics);
 void graphics_set_pixel(Graphics* graphics, int x, int y, Color color);
 void graphics_clear(Graphics* graphics, Color color);

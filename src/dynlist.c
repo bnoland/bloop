@@ -4,13 +4,15 @@
 #include <string.h>
 #include <assert.h>
 
-void dyn_list_init(DynList* list, size_t type_size)
+DynList dyn_list_make(size_t type_size)
 {
+  DynList list;
   const size_t initial_capacity = 32;
-  list->buffer = malloc(initial_capacity * type_size);
-  list->size = 0;
-  list->capacity = initial_capacity;
-  list->type_size = type_size;
+  list.buffer = malloc(initial_capacity * type_size);
+  list.size = 0;
+  list.capacity = initial_capacity;
+  list.type_size = type_size;
+  return list;
 }
 
 void dyn_list_destroy(DynList* list)

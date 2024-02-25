@@ -3,37 +3,35 @@
 
 #include "vector.h"
 
-// XXX: Make these functions return matrices rather than storing result in `dest`?
-
 typedef struct
 {
   float elements[3][3];
 } Mat3;
 
-void mat3_zero(Mat3* dest);
-void mat3_identity(Mat3* dest);
-void mat3_add(Mat3* dest, const Mat3* a, const Mat3* b);
-void mat3_sub(Mat3* dest, const Mat3* a, const Mat3* b);
-void mat3_mul(Mat3* dest, const Mat3* a, const Mat3* b);
-void mat3_scalar_mul(Mat3* dest, const Mat3* a, float c);
-void mat3_vec_mul(Vec3* dest, const Mat3* a, const Vec3* v);
+Mat3 mat3_zero(void);
+Mat3 mat3_identity(void);
+Mat3 mat3_add(const Mat3* a, const Mat3* b);
+Mat3 mat3_sub(const Mat3* a, const Mat3* b);
+Mat3 mat3_mul(const Mat3* a, const Mat3* b);
+Mat3 mat3_scalar_mul(const Mat3* a, float c);
+Vec3 mat3_vec_mul(const Mat3* a, const Vec3* v);
 
 typedef struct
 {
   float elements[4][4];
 } Mat4;
 
-void mat4_zero(Mat4* dest);
-void mat4_identity(Mat4* dest);
-void mat4_projection(Mat4* dest, float fov, float aspect_ratio, float near, float far);
-void mat4_rotation_x(Mat4* dest, float angle);
-void mat4_rotation_y(Mat4* dest, float angle);
-void mat4_rotation_z(Mat4* dest, float angle);
-void mat4_translation(Mat4* dest, float x, float y, float z);
-void mat4_add(Mat4* dest, const Mat4* a, const Mat4* b);
-void mat4_sub(Mat4* dest, const Mat4* a, const Mat4* b);
-void mat4_mul(Mat4* dest, const Mat4* a, const Mat4* b);
-void mat4_scalar_mul(Mat4* dest, const Mat4* a, float c);
-void mat4_vec_mul(Vec4* dest, const Mat4* a, const Vec4* v);
+Mat4 mat4_zero(void);
+Mat4 mat4_identity(void);
+Mat4 mat4_projection(float fov, float aspect_ratio, float near, float far);
+Mat4 mat4_rotation_x(float angle);
+Mat4 mat4_rotation_y(float angle);
+Mat4 mat4_rotation_z(float angle);
+Mat4 mat4_translation(float x, float y, float z);
+Mat4 mat4_add(const Mat4* a, const Mat4* b);
+Mat4 mat4_sub(const Mat4* a, const Mat4* b);
+Mat4 mat4_mul(const Mat4* a, const Mat4* b);
+Mat4 mat4_scalar_mul(const Mat4* a, float c);
+Vec4 mat4_vec_mul(const Mat4* a, const Vec4* v);
 
 #endif

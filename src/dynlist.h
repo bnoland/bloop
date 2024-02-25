@@ -12,7 +12,7 @@ typedef struct
   size_t type_size;  // Size of element type in bytes
 } DynList;
 
-void dyn_list_init(DynList* list, size_t type_size);
+DynList dyn_list_make(size_t type_size);
 void dyn_list_destroy(DynList* list);
 void* dyn_list_add(DynList* list, const void* data_ptr);
 void* dyn_list_add_slot(DynList* list);

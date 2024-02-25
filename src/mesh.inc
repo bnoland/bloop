@@ -36,15 +36,14 @@ typedef struct
   DynList indices;
 } MESH;
 
-void MESH_PREFIX(mesh_init)(MESH* mesh);
+MESH MESH_PREFIX(mesh_make)(void);
 void MESH_PREFIX(mesh_destroy)(MESH* mesh);
 void MESH_PREFIX(mesh_load_from_arrays)(MESH* mesh,
-                                        bool initialize,
                                         const VERTEX vertices[],
                                         size_t num_vertices,
                                         const size_t indices[],
                                         size_t num_indices);
-bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals);
+bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uvs, bool load_normals);
 
 #else
 
@@ -56,10 +55,12 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool initial
 
 static bool face_elements_equal(const void* a, const void* b);
 
-void MESH_PREFIX(mesh_init)(MESH* mesh)
+MESH MESH_PREFIX(mesh_make)(void)
 {
-  dyn_list_init(&mesh->vertices, sizeof(VERTEX));
-  dyn_list_init(&mesh->indices, sizeof(size_t));
+  MESH mesh;
+  mesh.vertices = dyn_list_make(sizeof(VERTEX));
+  mesh.indices = dyn_list_make(sizeof(size_t));
+  return mesh;
 }
 
 void MESH_PREFIX(mesh_destroy)(MESH* mesh)
@@ -69,15 +70,12 @@ void MESH_PREFIX(mesh_destroy)(MESH* mesh)
 }
 
 void MESH_PREFIX(mesh_load_from_arrays)(MESH* mesh,
-                                        bool initialize,
                                         const VERTEX vertices[],
                                         size_t num_vertices,
                                         const size_t indices[],
                                         size_t num_indices)
 {
   assert(num_indices % 3 == 0);
-
-  if (initialize) MESH_PREFIX(mesh_init)(mesh);
 
   for (size_t i = 0; i < num_vertices; i++) {
     dyn_list_add(&mesh->vertices, &vertices[i]);
@@ -88,25 +86,21 @@ void MESH_PREFIX(mesh_load_from_arrays)(MESH* mesh,
   }
 }
 
-bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool initialize, bool load_uvs, bool load_normals)
+bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uvs, bool load_normals)
 {
-  if (initialize) MESH_PREFIX(mesh_init)(mesh);
-
-  Model model;
-  if (!model_load(&model, path, true)) {
+  Model model = model_make();
+  if (!model_load_from_file(&model, path)) {
     fprintf(stderr, "Failed to load model: %s\n", path);
     return false;
   }
 
-  DynList positions;
-  dyn_list_init(&positions, sizeof(Vec3));
+  DynList positions = dyn_list_make(sizeof(Vec3));
   for (size_t i = 0; i < model.positions.size; i++) {
     dyn_list_add(&positions, model_get_position(&model, i));
   }
 
 #if MESH_VERTEX_HAS_UVS
-  DynList uvs;
-  dyn_list_init(&uvs, sizeof(Vec2));
+  DynList uvs = dyn_list_make(sizeof(Vec2));
   if (load_uvs) {
     for (size_t i = 0; i < model.uvs.size; i++) {
       dyn_list_add(&uvs, model_get_uv(&model, i));
@@ -115,8 +109,7 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool initial
 #endif
 
 #if MESH_VERTEX_HAS_NORMALS
-  DynList normals;
-  dyn_list_init(&normals, sizeof(Vec3));
+  DynList normals = dyn_list_make(sizeof(Vec3));
   if (load_normals) {
     for (size_t i = 0; i < model.normals.size; i++) {
       dyn_list_add(&normals, model_get_normal(&model, i));
@@ -125,8 +118,7 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool initial
 #endif
 
   // XXX: Replace with a better data structure. Maybe a hash map from face elements -> indices?
-  DynList face_elements_seen;
-  dyn_list_init(&face_elements_seen, sizeof(FaceElement));
+  DynList face_elements_seen = dyn_list_make(sizeof(FaceElement));
 
   size_t current_index = 0;
 

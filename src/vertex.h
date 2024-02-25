@@ -18,10 +18,10 @@ typedef struct
   Vec4 pos;
 } GSOut;
 
-void gsout_add(GSOut* dest, const GSOut* v, const GSOut* w);
-void gsout_sub(GSOut* dest, const GSOut* v, const GSOut* w);
-void gsout_mul(GSOut* dest, const GSOut* v, float c);
-void gsout_mul_add(GSOut* dest, const GSOut* v, const GSOut* w, float c);
-void gsout_interpolate(GSOut* dest, const GSOut* v, const GSOut* w, float alpha);
+GSOut gsout_add(const GSOut* v, const GSOut* w);
+GSOut gsout_sub(const GSOut* v, const GSOut* w);
+GSOut gsout_mul(const GSOut* v, float c);
+GSOut gsout_mul_add(const GSOut* v, const GSOut* w, float c);
+GSOut gsout_interpolate(const GSOut* v, const GSOut* w, float alpha);
 
 #endif

@@ -26,11 +26,13 @@ static void graphics_draw_triangle_flat(Graphics* graphics,
 static void swap_vec_ptrs(const Vec3** v, const Vec3** w);
 static void swap_ints(int* x, int* y);
 
-void graphics_init(Graphics* graphics, int screen_width, int screen_height)
+Graphics graphics_make(int screen_width, int screen_height)
 {
-  graphics->screen_width = screen_width;
-  graphics->screen_height = screen_height;
-  graphics->pixel_buffer = (Color*)malloc(screen_width * screen_height * sizeof(Color));
+  Graphics graphics;
+  graphics.screen_width = screen_width;
+  graphics.screen_height = screen_height;
+  graphics.pixel_buffer = (Color*)malloc(screen_width * screen_height * sizeof(Color));
+  return graphics;
 }
 
 void graphics_destroy(Graphics* graphics)
@@ -111,8 +113,7 @@ void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, 
   if (p0->y > p2->y) swap_vec_ptrs(&p0, &p2);
   if (p1->y > p2->y) swap_vec_ptrs(&p1, &p2);
 
-  Vec3 q;
-  vec3_interpolate(&q, p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
+  Vec3 q = vec3_interpolate(p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
 
   if (q.x > p1->x) {
     graphics_draw_triangle_flat_bottom(graphics, p0, p1, &q, color);
@@ -133,14 +134,12 @@ static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
   const float height = p1->y - p0->y;
 
   // (p1 - p0) / height
-  Vec3 left_inc;
-  vec3_sub(&left_inc, p1, p0);
-  vec3_mul(&left_inc, &left_inc, 1.0f / height);
+  Vec3 left_inc = vec3_sub(p1, p0);
+  left_inc = vec3_mul(&left_inc, 1.0f / height);
 
   // (p2 - p0) / height
-  Vec3 right_inc;
-  vec3_sub(&right_inc, p2, p0);
-  vec3_mul(&right_inc, &right_inc, 1.0f / height);
+  Vec3 right_inc = vec3_sub(p2, p0);
+  right_inc = vec3_mul(&right_inc, 1.0f / height);
 
   graphics_draw_triangle_flat(graphics, p0, p0, &left_inc, &right_inc, height, color);
 }
@@ -155,14 +154,12 @@ static void graphics_draw_triangle_flat_top(Graphics* graphics,
   const float height = p2->y - p0->y;
 
   // (p2 - p0) / height
-  Vec3 left_inc;
-  vec3_sub(&left_inc, p2, p0);
-  vec3_mul(&left_inc, &left_inc, 1.0f / height);
+  Vec3 left_inc = vec3_sub(p2, p0);
+  left_inc = vec3_mul(&left_inc, 1.0f / height);
 
   // (p2 - p1) / height
-  Vec3 right_inc;
-  vec3_sub(&right_inc, p2, p1);
-  vec3_mul(&right_inc, &right_inc, 1.0f / height);
+  Vec3 right_inc = vec3_sub(p2, p1);
+  right_inc = vec3_mul(&right_inc, 1.0f / height);
 
   graphics_draw_triangle_flat(graphics, p0, p1, &left_inc, &right_inc, height, color);
 }
@@ -175,15 +172,11 @@ static void graphics_draw_triangle_flat(Graphics* graphics,
                                         float height,
                                         Color color)
 {
-  Vec3 left = *left_start;
-  Vec3 right = *right_start;
+  const int y_start = ceil(left_start->y - 0.5f);
+  const int y_end = ceil(left_start->y + height - 0.5f);
 
-  const int y_start = ceil(left.y - 0.5f);
-  const int y_end = ceil(left.y + height - 0.5f);
-
-  // Move to starting positions.
-  vec3_mul_add(&left, &left, left_inc, y_start + 0.5f - left.y);
-  vec3_mul_add(&right, &right, right_inc, y_start + 0.5f - right.y);
+  Vec3 left = vec3_mul_add(left_start, left_inc, y_start + 0.5f - left_start->y);
+  Vec3 right = vec3_mul_add(right_start, right_inc, y_start + 0.5f - right_start->y);
 
   for (int y = y_start; y < y_end; y++) {
     const int x_start = ceil(left.x - 0.5f);
@@ -193,8 +186,8 @@ static void graphics_draw_triangle_flat(Graphics* graphics,
       graphics_set_pixel(graphics, x, y, color);
     }
 
-    vec3_add(&left, &left, left_inc);
-    vec3_add(&right, &right, right_inc);
+    left = vec3_add(&left, left_inc);
+    right = vec3_add(&right, right_inc);
   }
 }
 

@@ -1,26 +1,36 @@
 #include "vertex.h"
 
-void gsout_add(GSOut* dest, const GSOut* v, const GSOut* w)
+GSOut gsout_add(const GSOut* v, const GSOut* w)
 {
-  vec4_add(&dest->pos, &v->pos, &w->pos);
+  GSOut result;
+  result.pos = vec4_add(&v->pos, &w->pos);
+  return result;
 }
 
-void gsout_sub(GSOut* dest, const GSOut* v, const GSOut* w)
+GSOut gsout_sub(const GSOut* v, const GSOut* w)
 {
-  vec4_sub(&dest->pos, &v->pos, &w->pos);
+  GSOut result;
+  result.pos = vec4_sub(&v->pos, &w->pos);
+  return result;
 }
 
-void gsout_mul(GSOut* dest, const GSOut* v, float c)
+GSOut gsout_mul(const GSOut* v, float c)
 {
-  vec4_mul(&dest->pos, &v->pos, c);
+  GSOut result;
+  result.pos = vec4_mul(&v->pos, c);
+  return result;
 }
 
-void gsout_mul_add(GSOut* dest, const GSOut* v, const GSOut* w, float c)
+GSOut gsout_mul_add(const GSOut* v, const GSOut* w, float c)
 {
-  vec4_mul_add(&dest->pos, &v->pos, &w->pos, c);
+  GSOut result;
+  result.pos = vec4_mul_add(&v->pos, &w->pos, c);
+  return result;
 }
 
-void gsout_interpolate(GSOut* dest, const GSOut* v, const GSOut* w, float alpha)
+GSOut gsout_interpolate(const GSOut* v, const GSOut* w, float alpha)
 {
-  vec4_interpolate(&dest->pos, &v->pos, &w->pos, alpha);
+  GSOut result;
+  result.pos = vec4_interpolate(&v->pos, &w->pos, alpha);
+  return result;
 }

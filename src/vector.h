@@ -1,8 +1,6 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
-// XXX: Make these functions return vectors rather than storing result in `dest`?
-
 typedef struct
 {
   union
@@ -16,11 +14,12 @@ typedef struct
   };
 } Vec2;
 
-void vec2_add(Vec2* dest, const Vec2* v, const Vec2* w);
-void vec2_sub(Vec2* dest, const Vec2* v, const Vec2* w);
-void vec2_mul(Vec2* dest, const Vec2* v, float c);
-void vec2_mul_add(Vec2* dest, const Vec2* v, const Vec2* w, float c);
-void vec2_interpolate(Vec2* dest, const Vec2* v, const Vec2* w, float alpha);
+Vec2 vec2_make(float x, float y);
+Vec2 vec2_add(const Vec2* v, const Vec2* w);
+Vec2 vec2_sub(const Vec2* v, const Vec2* w);
+Vec2 vec2_mul(const Vec2* v, float c);
+Vec2 vec2_mul_add(const Vec2* v, const Vec2* w, float c);
+Vec2 vec2_interpolate(const Vec2* v, const Vec2* w, float alpha);
 float vec2_dot(const Vec2* v, const Vec2* w);
 
 typedef struct
@@ -37,11 +36,12 @@ typedef struct
   };
 } Vec3;
 
-void vec3_add(Vec3* dest, const Vec3* v, const Vec3* w);
-void vec3_sub(Vec3* dest, const Vec3* v, const Vec3* w);
-void vec3_mul(Vec3* dest, const Vec3* v, float c);
-void vec3_mul_add(Vec3* dest, const Vec3* v, const Vec3* w, float c);
-void vec3_interpolate(Vec3* dest, const Vec3* v, const Vec3* w, float alpha);
+Vec3 vec3_make(float x, float y, float z);
+Vec3 vec3_add(const Vec3* v, const Vec3* w);
+Vec3 vec3_sub(const Vec3* v, const Vec3* w);
+Vec3 vec3_mul(const Vec3* v, float c);
+Vec3 vec3_mul_add(const Vec3* v, const Vec3* w, float c);
+Vec3 vec3_interpolate(const Vec3* v, const Vec3* w, float alpha);
 float vec3_dot(const Vec3* v, const Vec3* w);
 
 typedef struct
@@ -59,10 +59,11 @@ typedef struct
   };
 } Vec4;
 
-void vec4_add(Vec4* dest, const Vec4* v, const Vec4* w);
-void vec4_sub(Vec4* dest, const Vec4* v, const Vec4* w);
-void vec4_mul(Vec4* dest, const Vec4* v, float c);
-void vec4_mul_add(Vec4* dest, const Vec4* v, const Vec4* w, float c);
-void vec4_interpolate(Vec4* dest, const Vec4* v, const Vec4* w, float alpha);
+Vec4 vec4_make(float x, float y, float z, float w);
+Vec4 vec4_add(const Vec4* v, const Vec4* w);
+Vec4 vec4_sub(const Vec4* v, const Vec4* w);
+Vec4 vec4_mul(const Vec4* v, float c);
+Vec4 vec4_mul_add(const Vec4* v, const Vec4* w, float c);
+Vec4 vec4_interpolate(const Vec4* v, const Vec4* w, float alpha);
 
 #endif
