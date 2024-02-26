@@ -3,6 +3,7 @@
 #include "matrix.h"
 #include "vector.h"
 #include "utility.h"
+#include "effects/simple_effect.h"
 
 #include <SDL.h>
 

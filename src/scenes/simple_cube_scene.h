@@ -3,6 +3,7 @@
 
 #include "graphics.h"
 #include "pipelines/simple_pipeline.h"
+#include "meshes/simple_mesh.h"
 
 typedef struct
 {

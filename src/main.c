@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include "scenes/simple_cube_scene.h"
+#include "scenes/rainbow_cube_scene.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ int main(void)
   }
 
   Graphics graphics = graphics_make(screen_width, screen_height);
-  SimpleCubeScene simple_cube_scene = simple_cube_scene_make(&graphics);
+  RainbowCubeScene scene = rainbow_cube_scene_make(&graphics);
 
   float last_time = 0.0f;
 
@@ -66,8 +66,8 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    simple_cube_scene_update(&simple_cube_scene, dt);
-    simple_cube_scene_draw(&simple_cube_scene);
+    rainbow_cube_scene_update(&scene, dt);
+    rainbow_cube_scene_draw(&scene);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
@@ -75,7 +75,7 @@ int main(void)
     SDL_RenderPresent(renderer);
   }
 
-  simple_cube_scene_destroy(&simple_cube_scene);
+  rainbow_cube_scene_destroy(&scene);
   graphics_destroy(&graphics);
 
   SDL_DestroyTexture(screen_texture);
