@@ -22,6 +22,12 @@
 
 #include <stdbool.h>
 
+#undef _CONCAT
+#undef CONCAT
+#undef MESH_PREFIX
+#undef MESH
+#undef VERTEX
+
 #define _CONCAT(x, y) x##y
 #define CONCAT(x, y)  _CONCAT(x, y)
 

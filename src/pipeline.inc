@@ -1,97 +1,53 @@
-
-// Bail if we're missing any of the required parameters.
-#ifndef PIPELINE_TYPE_PREFIX
-#error "PIPELINE_TYPE_PREFIX is undefined"
-#endif
-#ifndef PIPELINE_FUNCTION_PREFIX
-#error "PIPELINE_FUNCTION_PREFIX is undefined"
-#endif
-#ifndef PIPELINE_VERTEX_TYPE
-#error "PIPELINE_VERTEX_TYPE is undefined"
-#endif
-#ifndef PIPELINE_VS_OUT_TYPE
-#error "PIPELINE_VS_OUT_TYPE is undefined"
-#endif
-#ifndef PIPELINE_GS_OUT_TYPE
-#error "PIPELINE_GS_OUT_TYPE is undefined"
-#endif
-#ifndef GS_OUT_ADD
-#error "GS_OUT_ADD is undefined"
-#endif
-#ifndef GS_OUT_SUB
-#error "GS_OUT_SUB is undefined"
-#endif
-#ifndef GS_OUT_MUL
-#error "GS_OUT_MUL is undefined"
-#endif
-#ifndef GS_OUT_MUL_ADD
-#error "GS_OUT_MUL_ADD is undefined"
-#endif
-#ifndef GS_OUT_INTERPOLATE
-#error "GS_OUT_INTERPOLATE is undefined"
-#endif
-#ifndef PIPELINE_MESH_TYPE
-#error "PIPELINE_MESH_TYPE is undefined"
-#endif
-
 #ifndef PIPELINE_IMPLEMENTATION
 
 #include "graphics.h"
 
-#include <stddef.h>
 #include <tgmath.h>
 
-#define _CONCAT(x, y) x##y
-#define CONCAT(x, y)  _CONCAT(x, y)
-
+#define _CONCAT(x, y)         x##y
+#define CONCAT(x, y)          _CONCAT(x, y)
 #define PIPELINE_PREFIX(name) CONCAT(PIPELINE_FUNCTION_PREFIX, name)
-
-#define PIPELINE CONCAT(PIPELINE_TYPE_PREFIX, Pipeline)
-
-#define VERTEX_SHADER CONCAT(PIPELINE_TYPE_PREFIX, VertexShader)
-#define GEOM_SHADER   CONCAT(PIPELINE_TYPE_PREFIX, GeometryShader)
-#define PIXEL_SHADER  CONCAT(PIPELINE_TYPE_PREFIX, PixelShader)
-
-#define VERTEX PIPELINE_VERTEX_TYPE
-#define VS_OUT PIPELINE_VS_OUT_TYPE
-#define GS_OUT PIPELINE_GS_OUT_TYPE
-#define MESH   PIPELINE_MESH_TYPE
-
-typedef void (*VERTEX_SHADER)(const VERTEX* in, VS_OUT* out);
-typedef void (*GEOM_SHADER)(const VS_OUT* in0,
-                            const VS_OUT* in1,
-                            const VS_OUT* in2,
-                            GS_OUT* out0,
-                            GS_OUT* out1,
-                            GS_OUT* out2,
-                            size_t triangle_index);
-typedef Color (*PIXEL_SHADER)(const GS_OUT* in);
+#define PIPELINE              CONCAT(PIPELINE_TYPE_PREFIX, Pipeline)
+#define MESH                  PIPELINE_MESH_TYPE
+#define EFFECT                PIPELINE_EFFECT_TYPE
+#define VERTEX                CONCAT(PIPELINE_EFFECT_TYPE, Vertex)
+#define VS_OUT                CONCAT(PIPELINE_EFFECT_TYPE, VSOut)
+#define GS_OUT                CONCAT(PIPELINE_EFFECT_TYPE, GSOut)
+#define GS_OUT_ADD            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_add)
+#define GS_OUT_SUB            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_sub)
+#define GS_OUT_MUL            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_mul)
+#define GS_OUT_MUL_ADD        CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_mul_add)
+#define GS_OUT_INTERPOLATE    CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_interpolate)
+#define EFFECT_MAKE           CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, make)
+#define VERTEX_SHADER         CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, vertex_shader)
+#define GEOMETRY_SHADER       CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, geometry_shader)
+#define PIXEL_SHADER          CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, pixel_shader)
 
 typedef struct
 {
   Graphics* graphics;
-  VERTEX_SHADER vertex_shader;
-  GEOM_SHADER geom_shader;
-  PIXEL_SHADER pixel_shader;
+  EFFECT effect;
 } PIPELINE;
 
-PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics,
-                                        VERTEX_SHADER vertex_shader,
-                                        GEOM_SHADER geom_shader,
-                                        PIXEL_SHADER pixel_shader);
-void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh);
+PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics);
+void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh);
 
 #else
 
-static void pipeline_transform_to_screen(PIPELINE* pipeline, GS_OUT* v);
+#include <stddef.h>
 
-static void pipeline_draw_triangle(PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
-static void pipeline_draw_triangle_flat_bottom(PIPELINE* pipeline,
+static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v);
+
+static void pipeline_draw_triangle(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
+static void pipeline_draw_triangle_flat_bottom(const PIPELINE* pipeline,
                                                const GS_OUT* v0,
                                                const GS_OUT* v1,
                                                const GS_OUT* v2);
-static void pipeline_draw_triangle_flat_top(PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
-static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
+static void pipeline_draw_triangle_flat_top(const PIPELINE* pipeline,
+                                            const GS_OUT* v0,
+                                            const GS_OUT* v1,
+                                            const GS_OUT* v2);
+static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
                                         const GS_OUT* left_start,
                                         const GS_OUT* right_start,
                                         const GS_OUT* left_inc,
@@ -100,27 +56,22 @@ static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
 
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
-PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics,
-                                        VERTEX_SHADER vertex_shader,
-                                        GEOM_SHADER geom_shader,
-                                        PIXEL_SHADER pixel_shader)
+PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics)
 {
-  PIPELINE pipeline;
-  pipeline.graphics = graphics;
-  pipeline.vertex_shader = vertex_shader;
-  pipeline.geom_shader = geom_shader;
-  pipeline.pixel_shader = pixel_shader;
-  return pipeline;
+  return (PIPELINE){
+    .graphics = graphics,
+    .effect = EFFECT_MAKE(),
+  };
 }
 
-void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh)
+void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh)
 {
   DynList trans_verts = dyn_list_make(sizeof(VS_OUT));
 
   for (size_t i = 0; i < mesh->vertices.size; i++) {
     const VERTEX* v = dyn_list_at(&mesh->vertices, i);
     VS_OUT* vs = dyn_list_add_slot(&trans_verts);
-    pipeline->vertex_shader(v, vs);
+    VERTEX_SHADER(&pipeline->effect, v, vs);
   }
 
   for (size_t i = 0; i < mesh->indices.size / 3; i++) {
@@ -135,7 +86,7 @@ void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh)
     GS_OUT gs0;
     GS_OUT gs1;
     GS_OUT gs2;
-    pipeline->geom_shader(vs0, vs1, vs2, &gs0, &gs1, &gs2, i);
+    GEOMETRY_SHADER(&pipeline->effect, vs0, vs1, vs2, &gs0, &gs1, &gs2, i);
 
     pipeline_transform_to_screen(pipeline, &gs0);
     pipeline_transform_to_screen(pipeline, &gs1);
@@ -147,7 +98,7 @@ void PIPELINE_PREFIX(pipeline_draw)(PIPELINE* pipeline, const MESH* mesh)
   dyn_list_destroy(&trans_verts);
 }
 
-static void pipeline_transform_to_screen(PIPELINE* pipeline, GS_OUT* v)
+static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v)
 {
   const size_t screen_width = pipeline->graphics->screen_width;
   const size_t screen_height = pipeline->graphics->screen_height;
@@ -155,7 +106,7 @@ static void pipeline_transform_to_screen(PIPELINE* pipeline, GS_OUT* v)
   v->pos.y = (screen_height / 2.0f) * (-v->pos.y + 1.0f);
 }
 
-static void pipeline_draw_triangle(PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
+static void pipeline_draw_triangle(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
 {
   if (v0->pos.y > v1->pos.y) swap(&v0, &v1);
   if (v0->pos.y > v2->pos.y) swap(&v0, &v2);
@@ -173,7 +124,10 @@ static void pipeline_draw_triangle(PIPELINE* pipeline, const GS_OUT* v0, const G
 }
 
 // `v1` and `v2` form the flat bottom of the triangle.
-static void pipeline_draw_triangle_flat_bottom(PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
+static void pipeline_draw_triangle_flat_bottom(const PIPELINE* pipeline,
+                                               const GS_OUT* v0,
+                                               const GS_OUT* v1,
+                                               const GS_OUT* v2)
 {
   const float height = v1->pos.y - v0->pos.y;
 
@@ -189,7 +143,10 @@ static void pipeline_draw_triangle_flat_bottom(PIPELINE* pipeline, const GS_OUT*
 }
 
 // `v0` and `v1` form the flat top of the triangle.
-static void pipeline_draw_triangle_flat_top(PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
+static void pipeline_draw_triangle_flat_top(const PIPELINE* pipeline,
+                                            const GS_OUT* v0,
+                                            const GS_OUT* v1,
+                                            const GS_OUT* v2)
 {
   const float height = v2->pos.y - v0->pos.y;
 
@@ -204,7 +161,7 @@ static void pipeline_draw_triangle_flat_top(PIPELINE* pipeline, const GS_OUT* v0
   pipeline_draw_triangle_flat(pipeline, v0, v1, &left_inc, &right_inc, height);
 }
 
-static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
+static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
                                         const GS_OUT* left_start,
                                         const GS_OUT* right_start,
                                         const GS_OUT* left_inc,
@@ -226,7 +183,7 @@ static void pipeline_draw_triangle_flat(PIPELINE* pipeline,
     for (int x = x_start; x < x_end; x++) {
       GS_OUT scan = GS_OUT_INTERPOLATE(&left, &right, (x + 0.5f - left.pos.x) / width);
 
-      const Color color = pipeline->pixel_shader(&scan);
+      const Color color = PIXEL_SHADER(&pipeline->effect, &scan);
       graphics_set_pixel(pipeline->graphics, x, y, color);
     }
 
