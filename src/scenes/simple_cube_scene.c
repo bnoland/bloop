@@ -1,39 +1,72 @@
-#include "cube_scene.h"
+#include "simple_cube_scene.h"
 
 #include "matrix.h"
 #include "vector.h"
 #include "utility.h"
 
+#include <SDL.h>
+
 static SimpleMesh make_cube_mesh(float side);
 
-CubeScene cube_scene_make(const Graphics* graphics)
+SimpleCubeScene simple_cube_scene_make(const Graphics* graphics)
 {
-  return (CubeScene){
+  return (SimpleCubeScene){
     .mesh = make_cube_mesh(1.0f),
     .pipeline = simple_pipeline_make(graphics),
     .theta_x = 0.0f,
-    .theta_y = M_PI / 4.0f,
+    .theta_y = 0.0f,
     .theta_z = 0.0f,
   };
 }
 
-void cube_scene_destroy(CubeScene* scene)
+void simple_cube_scene_destroy(SimpleCubeScene* scene)
 {
   simple_mesh_destroy(&scene->mesh);
 }
 
-void cube_scene_update(CubeScene* scene, float dt)
+void simple_cube_scene_update(SimpleCubeScene* scene, float dt)
 {
-  // XXX: Handle key presses to rotate cube.
-  // XXX: Include x-axis + z-axis rotation.
-  const Mat4 rotation = mat4_rotation_y(scene->theta_y);
-  const Mat4 translation = mat4_translation(0.0f, 0.0f, -2.0f);
-  const Mat4 transform = mat4_mul(&translation, &rotation);
-  simple_effect_bind_transform(&scene->pipeline.effect, &transform);
+  const uint8_t* key_states = SDL_GetKeyboardState(NULL);
+
+  const double angular_speed = 6.0;
+
+  // Rotate around z-axis
+  if (key_states[SDL_SCANCODE_E]) {
+    scene->theta_z = wrap_angle(scene->theta_z + angular_speed * dt);
+  }
+  if (key_states[SDL_SCANCODE_D]) {
+    scene->theta_z = wrap_angle(scene->theta_z - angular_speed * dt);
+  }
+
+  // Rotate around x-axis
+  if (key_states[SDL_SCANCODE_Q]) {
+    scene->theta_x = wrap_angle(scene->theta_x + angular_speed * dt);
+  }
+  if (key_states[SDL_SCANCODE_A]) {
+    scene->theta_x = wrap_angle(scene->theta_x - angular_speed * dt);
+  }
+
+  // Rotate around y-axis
+  if (key_states[SDL_SCANCODE_W]) {
+    scene->theta_y = wrap_angle(scene->theta_y + angular_speed * dt);
+  }
+  if (key_states[SDL_SCANCODE_S]) {
+    scene->theta_y = wrap_angle(scene->theta_y - angular_speed * dt);
+  }
 }
 
-void cube_scene_draw(const CubeScene* scene)
+void simple_cube_scene_draw(SimpleCubeScene* scene)
 {
+  const Mat4 rotation_x = mat4_rotation_x(scene->theta_x);
+  const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
+  const Mat4 rotation_z = mat4_rotation_z(scene->theta_z);
+  const Mat4 translation = mat4_translation(0.0f, 0.0f, -2.0f);
+
+  Mat4 transform = mat4_mul(&translation, &rotation_x);
+  transform = mat4_mul(&transform, &rotation_y);
+  transform = mat4_mul(&transform, &rotation_z);
+  simple_effect_bind_transform(&scene->pipeline.effect, &transform);
+
   simple_pipeline_draw(&scene->pipeline, &scene->mesh);
 }
 

@@ -18,6 +18,7 @@ static inline float radians_to_degrees(float radians)
   return radians * (180.0f / M_PI);
 }
 
+double wrap_angle(double angle);
 char* strsep(char** stringp, const char* delim);
 
 #endif

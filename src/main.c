@@ -1,9 +1,12 @@
 #include "graphics.h"
-#include "scenes/cube_scene.h"
+#include "scenes/simple_cube_scene.h"
 
 #include <SDL.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+static void update_fps_counter(SDL_Window* window);
 
 int main(void)
 {
@@ -16,7 +19,7 @@ int main(void)
   const int screen_height = 600;
 
   SDL_Window* window = SDL_CreateWindow(
-    "Bloop", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_RESIZABLE);
+    "", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height, SDL_WINDOW_RESIZABLE);
   if (window == NULL) {
     fprintf(stderr, "Failed to create window: %s\n", SDL_GetError());
     return EXIT_FAILURE;
@@ -40,9 +43,17 @@ int main(void)
   }
 
   Graphics graphics = graphics_make(screen_width, screen_height);
-  CubeScene cube_scene = cube_scene_make(&graphics);
+  SimpleCubeScene simple_cube_scene = simple_cube_scene_make(&graphics);
+
+  float last_time = 0.0f;
 
   while (true) {
+    const float current_time = SDL_GetTicks() / 1000.0f;
+    const float dt = current_time - last_time;
+    last_time = current_time;
+
+    update_fps_counter(window);
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
@@ -55,8 +66,8 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    cube_scene_update(&cube_scene, 0.0f);  // XXX: pass time delta
-    cube_scene_draw(&cube_scene);
+    simple_cube_scene_update(&simple_cube_scene, dt);
+    simple_cube_scene_draw(&simple_cube_scene);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
@@ -64,7 +75,7 @@ int main(void)
     SDL_RenderPresent(renderer);
   }
 
-  cube_scene_destroy(&cube_scene);
+  simple_cube_scene_destroy(&simple_cube_scene);
   graphics_destroy(&graphics);
 
   SDL_DestroyTexture(screen_texture);
@@ -73,4 +84,22 @@ int main(void)
   SDL_Quit();
 
   return EXIT_SUCCESS;
+}
+
+static void update_fps_counter(SDL_Window* window)
+{
+  static uint32_t last_time = 0;
+  static unsigned int frame_count = 0;
+
+  const uint32_t current_time = SDL_GetTicks();
+  const uint32_t delta_time = current_time - last_time;
+  frame_count++;
+
+  if (delta_time >= 500) {
+    char title[128];
+    snprintf(title, sizeof(title), "%.2f FPS", (float)frame_count / delta_time * 1000.0f);
+    SDL_SetWindowTitle(window, title);
+    last_time = current_time;
+    frame_count = 0;
+  }
 }

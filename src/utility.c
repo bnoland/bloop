@@ -2,6 +2,13 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <tgmath.h>
+
+double wrap_angle(double angle)
+{
+  const double rem = fmod(angle, 2 * M_PI);
+  return angle >= 0 ? rem : rem + 2 * M_PI;
+}
 
 char* strsep(char** stringp, const char* delim)
 {

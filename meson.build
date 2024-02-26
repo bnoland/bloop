@@ -29,7 +29,7 @@ executable(
     'src/utility.c',
     'src/pipelines/simple_pipeline.c',
     'src/meshes/simple_mesh.c',
-    'src/scenes/cube_scene.c',
+    'src/scenes/simple_cube_scene.c',
     'src/effects/simple_effect.c',
   ],
   dependencies: [m_dep, sdl2_dep],
