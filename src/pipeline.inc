@@ -25,11 +25,11 @@
 
 typedef struct
 {
-  Graphics* graphics;
+  const Graphics* graphics;
   EFFECT effect;
 } PIPELINE;
 
-PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics);
+PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics);
 void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh);
 
 #else
@@ -56,7 +56,7 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
 
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
-PIPELINE PIPELINE_PREFIX(pipeline_make)(Graphics* graphics)
+PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics)
 {
   return (PIPELINE){
     .graphics = graphics,
@@ -112,7 +112,7 @@ static void pipeline_draw_triangle(const PIPELINE* pipeline, const GS_OUT* v0, c
   if (v0->pos.y > v2->pos.y) swap(&v0, &v2);
   if (v1->pos.y > v2->pos.y) swap(&v1, &v2);
 
-  GS_OUT q = GS_OUT_INTERPOLATE(v0, v2, (v1->pos.y - v0->pos.y) / (v2->pos.y - v0->pos.y));
+  const GS_OUT q = GS_OUT_INTERPOLATE(v0, v2, (v1->pos.y - v0->pos.y) / (v2->pos.y - v0->pos.y));
 
   if (q.pos.x > v1->pos.x) {
     pipeline_draw_triangle_flat_bottom(pipeline, v0, v1, &q);
@@ -181,8 +181,7 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
     const float width = right.pos.x - left.pos.x;
 
     for (int x = x_start; x < x_end; x++) {
-      GS_OUT scan = GS_OUT_INTERPOLATE(&left, &right, (x + 0.5f - left.pos.x) / width);
-
+      const GS_OUT scan = GS_OUT_INTERPOLATE(&left, &right, (x + 0.5f - left.pos.x) / width);
       const Color color = PIXEL_SHADER(&pipeline->effect, &scan);
       graphics_set_pixel(pipeline->graphics, x, y, color);
     }

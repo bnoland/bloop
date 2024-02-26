@@ -13,7 +13,7 @@ typedef struct
   float theta_z;
 } CubeScene;
 
-CubeScene cube_scene_make(Graphics* graphics);
+CubeScene cube_scene_make(const Graphics* graphics);
 void cube_scene_destroy(CubeScene* scene);
 void cube_scene_update(CubeScene* scene, float dt);
 void cube_scene_draw(const CubeScene* scene);

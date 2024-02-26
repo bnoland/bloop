@@ -5,17 +5,17 @@
 #include <tgmath.h>
 #include <stdbool.h>
 
-static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
+static void graphics_draw_triangle_flat_bottom(const Graphics* graphics,
                                                const Vec3* p0,
                                                const Vec3* p1,
                                                const Vec3* p2,
                                                Color color);
-static void graphics_draw_triangle_flat_top(Graphics* graphics,
+static void graphics_draw_triangle_flat_top(const Graphics* graphics,
                                             const Vec3* p0,
                                             const Vec3* p1,
                                             const Vec3* p2,
                                             Color color);
-static void graphics_draw_triangle_flat(Graphics* graphics,
+static void graphics_draw_triangle_flat(const Graphics* graphics,
                                         const Vec3* left_start,
                                         const Vec3* right_start,
                                         const Vec3* left_inc,
@@ -28,11 +28,11 @@ static void swap_ints(int* x, int* y);
 
 Graphics graphics_make(int screen_width, int screen_height)
 {
-  Graphics graphics;
-  graphics.screen_width = screen_width;
-  graphics.screen_height = screen_height;
-  graphics.pixel_buffer = (Color*)malloc(screen_width * screen_height * sizeof(Color));
-  return graphics;
+  return (Graphics){
+    .screen_width = screen_width,
+    .screen_height = screen_height,
+    .pixel_buffer = malloc(screen_width * screen_height * sizeof(Color)),
+  };
 }
 
 void graphics_destroy(Graphics* graphics)
@@ -41,7 +41,7 @@ void graphics_destroy(Graphics* graphics)
   graphics->pixel_buffer = NULL;
 }
 
-void graphics_set_pixel(Graphics* graphics, int x, int y, Color color)
+void graphics_set_pixel(const Graphics* graphics, int x, int y, Color color)
 {
   assert(x >= 0 && x < graphics->screen_width);
   assert(y >= 0 && y < graphics->screen_height);
@@ -49,7 +49,7 @@ void graphics_set_pixel(Graphics* graphics, int x, int y, Color color)
   graphics->pixel_buffer[x + y * graphics->screen_width] = color;
 }
 
-void graphics_clear(Graphics* graphics, Color color)
+void graphics_clear(const Graphics* graphics, Color color)
 {
   const int screen_width = graphics->screen_width;
   const int screen_height = graphics->screen_height;
@@ -61,7 +61,7 @@ void graphics_clear(Graphics* graphics, Color color)
   }
 }
 
-void graphics_draw_line(Graphics* graphics, const Vec3* p0, const Vec3* p1, Color color)
+void graphics_draw_line(const Graphics* graphics, const Vec3* p0, const Vec3* p1, Color color)
 {
   int x0 = p0->x;
   int y0 = p0->y;
@@ -107,13 +107,13 @@ void graphics_draw_line(Graphics* graphics, const Vec3* p0, const Vec3* p1, Colo
   }
 }
 
-void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
+void graphics_draw_triangle(const Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color)
 {
   if (p0->y > p1->y) swap_vec_ptrs(&p0, &p1);
   if (p0->y > p2->y) swap_vec_ptrs(&p0, &p2);
   if (p1->y > p2->y) swap_vec_ptrs(&p1, &p2);
 
-  Vec3 q = vec3_interpolate(p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
+  const Vec3 q = vec3_interpolate(p0, p2, (p1->y - p0->y) / (p2->y - p0->y));
 
   if (q.x > p1->x) {
     graphics_draw_triangle_flat_bottom(graphics, p0, p1, &q, color);
@@ -125,7 +125,7 @@ void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, 
 }
 
 // `p1` and `p2` form the flat bottom of the triangle.
-static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
+static void graphics_draw_triangle_flat_bottom(const Graphics* graphics,
                                                const Vec3* p0,
                                                const Vec3* p1,
                                                const Vec3* p2,
@@ -145,7 +145,7 @@ static void graphics_draw_triangle_flat_bottom(Graphics* graphics,
 }
 
 // `p0` and `p1` form the flat top of the triangle.
-static void graphics_draw_triangle_flat_top(Graphics* graphics,
+static void graphics_draw_triangle_flat_top(const Graphics* graphics,
                                             const Vec3* p0,
                                             const Vec3* p1,
                                             const Vec3* p2,
@@ -164,7 +164,7 @@ static void graphics_draw_triangle_flat_top(Graphics* graphics,
   graphics_draw_triangle_flat(graphics, p0, p1, &left_inc, &right_inc, height, color);
 }
 
-static void graphics_draw_triangle_flat(Graphics* graphics,
+static void graphics_draw_triangle_flat(const Graphics* graphics,
                                         const Vec3* left_start,
                                         const Vec3* right_start,
                                         const Vec3* left_inc,

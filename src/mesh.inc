@@ -1,40 +1,14 @@
-
-// Bail if we're missing any of the required parameters.
-#ifndef MESH_TYPE_PREFIX
-#error "MESH_TYPE_PREFIX is undefined"
-#endif
-#ifndef MESH_FUNCTION_PREFIX
-#error "MESH_FUNCTION_PREFIX is undefined"
-#endif
-#ifndef MESH_VERTEX_TYPE
-#error "MESH_VERTEX_TYPE is undefined"
-#endif
-#ifndef MESH_VERTEX_HAS_UVS
-#error "MESH_VERTEX_HAS_UVS is undefined"
-#endif
-#ifndef MESH_VERTEX_HAS_NORMALS
-#error "MESH_VERTEX_HAS_NORMALS is undefined"
-#endif
-
 #ifndef MESH_IMPLEMENTATION
 
 #include "dynlist.h"
 
 #include <stdbool.h>
 
-#undef _CONCAT
-#undef CONCAT
-#undef MESH_PREFIX
-#undef MESH
-#undef VERTEX
-
-#define _CONCAT(x, y) x##y
-#define CONCAT(x, y)  _CONCAT(x, y)
-
+#define _CONCAT(x, y)     x##y
+#define CONCAT(x, y)      _CONCAT(x, y)
 #define MESH_PREFIX(name) CONCAT(MESH_FUNCTION_PREFIX, name)
-
-#define MESH   CONCAT(MESH_TYPE_PREFIX, Mesh)
-#define VERTEX MESH_VERTEX_TYPE
+#define MESH              CONCAT(MESH_TYPE_PREFIX, Mesh)
+#define VERTEX            MESH_VERTEX_TYPE
 
 typedef struct
 {
@@ -63,10 +37,10 @@ static bool face_elements_equal(const void* a, const void* b);
 
 MESH MESH_PREFIX(mesh_make)(void)
 {
-  MESH mesh;
-  mesh.vertices = dyn_list_make(sizeof(VERTEX));
-  mesh.indices = dyn_list_make(sizeof(size_t));
-  return mesh;
+  return (MESH){
+    .vertices = dyn_list_make(sizeof(VERTEX)),
+    .indices = dyn_list_make(sizeof(size_t)),
+  };
 }
 
 void MESH_PREFIX(mesh_destroy)(MESH* mesh)
@@ -140,9 +114,7 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uv
 
       dyn_list_add(&face_elements_seen, &face->elements[j]);
 
-      VERTEX vertex = {
-        .pos = *model_get_position(&model, face->elements[j].pos_index),
-      };
+      VERTEX vertex = { .pos = *model_get_position(&model, face->elements[j].pos_index) };
 
 #if MESH_VERTEX_HAS_UVS
       if (load_uvs) {
@@ -185,8 +157,8 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uv
 
 static bool face_elements_equal(const void* a, const void* b)
 {
-  const FaceElement* fa = (const FaceElement*)a;
-  const FaceElement* fb = (const FaceElement*)b;
+  const FaceElement* fa = a;
+  const FaceElement* fb = b;
 
   if (fa->pos_index != fb->pos_index) return false;
 

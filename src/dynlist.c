@@ -6,13 +6,13 @@
 
 DynList dyn_list_make(size_t type_size)
 {
-  DynList list;
   const size_t initial_capacity = 32;
-  list.buffer = malloc(initial_capacity * type_size);
-  list.size = 0;
-  list.capacity = initial_capacity;
-  list.type_size = type_size;
-  return list;
+  return (DynList){
+    .buffer = malloc(initial_capacity * type_size),
+    .size = 0,
+    .capacity = initial_capacity,
+    .type_size = type_size,
+  };
 }
 
 void dyn_list_destroy(DynList* list)

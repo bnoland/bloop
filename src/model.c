@@ -10,12 +10,12 @@
 
 Model model_make(void)
 {
-  Model model;
-  model.faces = dyn_list_make(sizeof(Face));
-  model.positions = dyn_list_make(sizeof(Vec3));
-  model.uvs = dyn_list_make(sizeof(Vec2));
-  model.normals = dyn_list_make(sizeof(Vec3));
-  return model;
+  return (Model){
+    .faces = dyn_list_make(sizeof(Face)),
+    .positions = dyn_list_make(sizeof(Vec3)),
+    .uvs = dyn_list_make(sizeof(Vec2)),
+    .normals = dyn_list_make(sizeof(Vec3)),
+  };
 }
 
 void model_destroy(Model* model)
@@ -132,23 +132,23 @@ bool model_load_from_file(Model* model, const char* path)
 const Face* model_get_face(const Model* model, size_t index)
 {
   assert(index < model->faces.size);
-  return (Face*)dyn_list_at(&model->faces, index);
+  return dyn_list_at(&model->faces, index);
 }
 
 const Vec3* model_get_position(const Model* model, size_t index)
 {
   assert(index < model->positions.size);
-  return (Vec3*)dyn_list_at(&model->positions, index);
+  return dyn_list_at(&model->positions, index);
 }
 
 const Vec2* model_get_uv(const Model* model, size_t index)
 {
   assert(index < model->uvs.size);
-  return (Vec2*)dyn_list_at(&model->uvs, index);
+  return dyn_list_at(&model->uvs, index);
 }
 
 const Vec3* model_get_normal(const Model* model, size_t index)
 {
   assert(index < model->normals.size);
-  return (Vec3*)dyn_list_at(&model->normals, index);
+  return dyn_list_at(&model->normals, index);
 }

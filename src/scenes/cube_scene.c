@@ -6,7 +6,7 @@
 
 static SimpleMesh make_cube_mesh(float side);
 
-CubeScene cube_scene_make(Graphics* graphics)
+CubeScene cube_scene_make(const Graphics* graphics)
 {
   return (CubeScene){
     .mesh = make_cube_mesh(1.0f),

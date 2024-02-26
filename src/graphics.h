@@ -16,9 +16,9 @@ typedef struct
 
 Graphics graphics_make(int screen_width, int screen_height);
 void graphics_destroy(Graphics* graphics);
-void graphics_set_pixel(Graphics* graphics, int x, int y, Color color);
-void graphics_clear(Graphics* graphics, Color color);
-void graphics_draw_line(Graphics* graphics, const Vec3* p0, const Vec3* p1, Color color);
-void graphics_draw_triangle(Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
+void graphics_set_pixel(const Graphics* graphics, int x, int y, Color color);
+void graphics_clear(const Graphics* graphics, Color color);
+void graphics_draw_line(const Graphics* graphics, const Vec3* p0, const Vec3* p1, Color color);
+void graphics_draw_triangle(const Graphics* graphics, const Vec3* p0, const Vec3* p1, const Vec3* p2, Color color);
 
 #endif
