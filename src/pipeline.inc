@@ -1,6 +1,7 @@
 #ifndef PIPELINE_IMPLEMENTATION
 
 #include "graphics.h"
+#include "depth_buffer.h"
 #include "meshes/default_mesh.h"
 
 #include <tgmath.h>
@@ -62,10 +63,11 @@
 typedef struct
 {
   const Graphics* graphics;
+  const DepthBuffer* depth_buffer;
   EFFECT effect;
 } PIPELINE;
 
-PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics);
+PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics, const DepthBuffer* depth_buffer);
 void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh);
 
 #else
@@ -92,10 +94,11 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
 
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
-PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics)
+PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics, const DepthBuffer* depth_buffer)
 {
   return (PIPELINE){
     .graphics = graphics,
+    .depth_buffer = depth_buffer,
     .effect = EFFECT_MAKE(),
   };
 }
@@ -109,6 +112,8 @@ void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh)
     VS_OUT* vs = dyn_list_add_slot(&trans_verts);
     VERTEX_SHADER(&pipeline->effect, v, vs);
   }
+
+  depth_buffer_clear(pipeline->depth_buffer);
 
   for (size_t i = 0; i < mesh->indices.size / 3; i++) {
     const size_t* i0 = dyn_list_at(&mesh->indices, 3 * i);
@@ -218,8 +223,10 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
 
     for (int x = x_start; x < x_end; x++) {
       const GS_OUT scan = GS_OUT_INTERPOLATE(&left, &right, (x + 0.5f - left.pos.x) / width);
-      const Color color = PIXEL_SHADER(&pipeline->effect, &scan);
-      graphics_set_pixel(pipeline->graphics, x, y, color);
+      if (depth_buffer_test_and_set(pipeline->depth_buffer, x, y, scan.pos.z)) {
+        const Color color = PIXEL_SHADER(&pipeline->effect, &scan);
+        graphics_set_pixel(pipeline->graphics, x, y, color);
+      }
     }
 
     left = GS_OUT_ADD(&left, left_inc);

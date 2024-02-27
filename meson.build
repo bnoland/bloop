@@ -27,6 +27,7 @@ executable(
     'src/model.c',
     'src/dynlist.c',
     'src/utility.c',
+    'src/depth_buffer.c',
     'src/effects/default_effect.c',
     'src/effects/color_effect.c',
     'src/pipelines/color_pipeline.c',

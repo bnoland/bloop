@@ -6,14 +6,17 @@
 #include "effects/color_effect.h"
 
 #include <SDL.h>
+#include <stdlib.h>
 
 static ColorMesh make_cube_mesh(float side);
 
 ColorCubeScene color_cube_scene_make(const Graphics* graphics)
 {
+  DepthBuffer* depth_buffer = depth_buffer_make(graphics->screen_width, graphics->screen_height);
   return (ColorCubeScene){
+    .depth_buffer = depth_buffer,
     .mesh = make_cube_mesh(1.0f),
-    .pipeline = color_pipeline_make(graphics),
+    .pipeline = color_pipeline_make(graphics, depth_buffer),
     .theta_x = 0.0f,
     .theta_y = 0.0f,
     .theta_z = 0.0f,
@@ -22,6 +25,7 @@ ColorCubeScene color_cube_scene_make(const Graphics* graphics)
 
 void color_cube_scene_destroy(ColorCubeScene* scene)
 {
+  depth_buffer_destroy(scene->depth_buffer);
   color_mesh_destroy(&scene->mesh);
 }
 

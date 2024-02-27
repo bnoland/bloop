@@ -2,11 +2,13 @@
 #define SOLID_CUBE_SCENE_H_
 
 #include "graphics.h"
+#include "depth_buffer.h"
 #include "pipelines/default_pipeline.h"
 #include "meshes/default_mesh.h"
 
 typedef struct
 {
+  DepthBuffer* depth_buffer;
   DefaultMesh mesh;
   DefaultPipeline pipeline;
   float theta_x;

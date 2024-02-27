@@ -11,9 +11,11 @@ static DefaultMesh make_cube_mesh(float side);
 
 SolidCubeScene solid_cube_scene_make(const Graphics* graphics)
 {
+  DepthBuffer* depth_buffer = depth_buffer_make(graphics->screen_width, graphics->screen_height);
   return (SolidCubeScene){
+    .depth_buffer = depth_buffer,
     .mesh = make_cube_mesh(1.0f),
-    .pipeline = default_pipeline_make(graphics),
+    .pipeline = default_pipeline_make(graphics, depth_buffer),
     .theta_x = 0.0f,
     .theta_y = 0.0f,
     .theta_z = 0.0f,
@@ -22,6 +24,7 @@ SolidCubeScene solid_cube_scene_make(const Graphics* graphics)
 
 void solid_cube_scene_destroy(SolidCubeScene* scene)
 {
+  depth_buffer_destroy(scene->depth_buffer);
   default_mesh_destroy(&scene->mesh);
 }
 

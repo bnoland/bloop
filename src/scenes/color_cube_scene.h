@@ -2,11 +2,13 @@
 #define COLOR_CUBE_SCENE_H_
 
 #include "graphics.h"
+#include "depth_buffer.h"
 #include "pipelines/color_pipeline.h"
 #include "meshes/color_mesh.h"
 
 typedef struct
 {
+  DepthBuffer* depth_buffer;
   ColorMesh mesh;
   ColorPipeline pipeline;
   float theta_x;
