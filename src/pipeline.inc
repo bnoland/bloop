@@ -4,6 +4,25 @@
 
 #include <tgmath.h>
 
+#undef _CONCAT
+#undef CONCAT
+#undef PIPELINE_PREFIX
+#undef PIPELINE
+#undef MESH
+#undef EFFECT
+#undef VERTEX
+#undef VS_OUT
+#undef GS_OUT
+#undef GS_OUT_ADD
+#undef GS_OUT_SUB
+#undef GS_OUT_MUL
+#undef GS_OUT_MUL_ADD
+#undef GS_OUT_INTERPOLATE
+#undef EFFECT_MAKE
+#undef VERTEX_SHADER
+#undef GEOMETRY_SHADER
+#undef PIXEL_SHADER
+
 #define _CONCAT(x, y)         x##y
 #define CONCAT(x, y)          _CONCAT(x, y)
 #define PIPELINE_PREFIX(name) CONCAT(PIPELINE_FUNCTION_PREFIX, name)
