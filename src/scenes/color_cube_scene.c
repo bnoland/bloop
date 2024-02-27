@@ -1,31 +1,31 @@
-#include "rainbow_cube_scene.h"
+#include "color_cube_scene.h"
 
 #include "matrix.h"
 #include "vector.h"
 #include "utility.h"
-#include "effects/rainbow_effect.h"
+#include "effects/color_effect.h"
 
 #include <SDL.h>
 
-static RainbowMesh make_cube_mesh(float side);
+static ColorMesh make_cube_mesh(float side);
 
-RainbowCubeScene rainbow_cube_scene_make(const Graphics* graphics)
+ColorCubeScene color_cube_scene_make(const Graphics* graphics)
 {
-  return (RainbowCubeScene){
+  return (ColorCubeScene){
     .mesh = make_cube_mesh(1.0f),
-    .pipeline = rainbow_pipeline_make(graphics),
+    .pipeline = color_pipeline_make(graphics),
     .theta_x = 0.0f,
     .theta_y = 0.0f,
     .theta_z = 0.0f,
   };
 }
 
-void rainbow_cube_scene_destroy(RainbowCubeScene* scene)
+void color_cube_scene_destroy(ColorCubeScene* scene)
 {
-  rainbow_mesh_destroy(&scene->mesh);
+  color_mesh_destroy(&scene->mesh);
 }
 
-void rainbow_cube_scene_update(RainbowCubeScene* scene, float dt)
+void color_cube_scene_update(ColorCubeScene* scene, float dt)
 {
   const uint8_t* key_states = SDL_GetKeyboardState(NULL);
 
@@ -56,7 +56,7 @@ void rainbow_cube_scene_update(RainbowCubeScene* scene, float dt)
   }
 }
 
-void rainbow_cube_scene_draw(RainbowCubeScene* scene)
+void color_cube_scene_draw(ColorCubeScene* scene)
 {
   const Mat4 rotation_x = mat4_rotation_x(scene->theta_x);
   const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
@@ -66,16 +66,16 @@ void rainbow_cube_scene_draw(RainbowCubeScene* scene)
   Mat4 transform = mat4_mul(&translation, &rotation_x);
   transform = mat4_mul(&transform, &rotation_y);
   transform = mat4_mul(&transform, &rotation_z);
-  rainbow_effect_bind_transform(&scene->pipeline.effect, &transform);
+  color_effect_bind_transform(&scene->pipeline.effect, &transform);
 
-  rainbow_pipeline_draw(&scene->pipeline, &scene->mesh);
+  color_pipeline_draw(&scene->pipeline, &scene->mesh);
 }
 
-static RainbowMesh make_cube_mesh(float side)
+static ColorMesh make_cube_mesh(float side)
 {
   const float half_side = side / 2.0f;
 
-  const RainbowEffectVertex vertices[] = {
+  const ColorEffectVertex vertices[] = {
     // Near side
     { .pos = vec3_make(-half_side, -half_side, -half_side), .color = vec3_make(1.0f, 0.0f, 0.0f) },
     { .pos = vec3_make(half_side, -half_side, -half_side), .color = vec3_make(0.0f, 1.0f, 0.0f) },
@@ -121,7 +121,7 @@ static RainbowMesh make_cube_mesh(float side)
   const size_t num_vertices = 24;
   const size_t num_indices = 36;
 
-  RainbowMesh mesh = rainbow_mesh_make();
-  rainbow_mesh_load_from_arrays(&mesh, vertices, num_vertices, indices, num_indices);
+  ColorMesh mesh = color_mesh_make();
+  color_mesh_load_from_arrays(&mesh, vertices, num_vertices, indices, num_indices);
   return mesh;
 }
