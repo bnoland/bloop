@@ -20,6 +20,9 @@ ColorCubeScene color_cube_scene_make(const Graphics* graphics)
     .theta_x = 0.0f,
     .theta_y = 0.0f,
     .theta_z = 0.0f,
+    .x = 0.0f,
+    .y = 0.0f,
+    .z = -2.0f,
   };
 }
 
@@ -34,6 +37,7 @@ void color_cube_scene_update(ColorCubeScene* scene, float dt)
   const uint8_t* key_states = SDL_GetKeyboardState(NULL);
 
   const double angular_speed = 6.0;
+  const double speed = 5.0;
 
   // Rotate around z-axis
   if (key_states[SDL_SCANCODE_E]) {
@@ -58,6 +62,30 @@ void color_cube_scene_update(ColorCubeScene* scene, float dt)
   if (key_states[SDL_SCANCODE_S]) {
     scene->theta_y = wrap_angle(scene->theta_y - angular_speed * dt);
   }
+
+  // Move along z-axis
+  if (key_states[SDL_SCANCODE_UP]) {
+    scene->z -= speed * dt;
+  }
+  if (key_states[SDL_SCANCODE_DOWN]) {
+    scene->z += speed * dt;
+  }
+
+  // Move along x-axis
+  if (key_states[SDL_SCANCODE_LEFT]) {
+    scene->x -= speed * dt;
+  }
+  if (key_states[SDL_SCANCODE_RIGHT]) {
+    scene->x += speed * dt;
+  }
+
+  // Move along y-axis
+  if (key_states[SDL_SCANCODE_PAGEDOWN]) {
+    scene->y -= speed * dt;
+  }
+  if (key_states[SDL_SCANCODE_PAGEUP]) {
+    scene->y += speed * dt;
+  }
 }
 
 void color_cube_scene_draw(ColorCubeScene* scene)
@@ -65,7 +93,7 @@ void color_cube_scene_draw(ColorCubeScene* scene)
   const Mat4 rotation_x = mat4_rotation_x(scene->theta_x);
   const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
   const Mat4 rotation_z = mat4_rotation_z(scene->theta_z);
-  const Mat4 translation = mat4_translation(0.0f, 0.0f, -2.0f);
+  const Mat4 translation = mat4_translation(scene->x, scene->y, scene->z);
 
   Mat4 transform = mat4_mul(&translation, &rotation_x);
   transform = mat4_mul(&transform, &rotation_y);

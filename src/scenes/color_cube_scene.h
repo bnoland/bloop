@@ -14,6 +14,9 @@ typedef struct
   float theta_x;
   float theta_y;
   float theta_z;
+  float x;
+  float y;
+  float z;
 } ColorCubeScene;
 
 ColorCubeScene color_cube_scene_make(const Graphics* graphics);
