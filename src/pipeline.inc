@@ -1,8 +1,25 @@
 #ifndef PIPELINE_IMPLEMENTATION
 
 #include "graphics.h"
+#include "meshes/default_mesh.h"
 
 #include <tgmath.h>
+
+#ifndef PIPELINE_FUNCTION_PREFIX
+#define PIPELINE_FUNCTION_PREFIX Default
+#endif
+#ifndef PIPELINE_TYPE_PREFIX
+#define PIPELINE_TYPE_PREFIX default_
+#endif
+#ifndef PIPELINE_MESH_TYPE
+#define PIPELINE_MESH_TYPE DefaultMesh
+#endif
+#ifndef PIPELINE_EFFECT_TYPE
+#define PIPELINE_EFFECT_TYPE DefaultEffect
+#endif
+#ifndef PIPELINE_EFFECT_FUNCTION_PREFIX
+#define PIPELINE_EFFECT_FUNCTION_PREFIX default_effect_
+#endif
 
 #undef _CONCAT
 #undef CONCAT

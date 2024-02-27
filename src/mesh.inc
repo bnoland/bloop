@@ -1,8 +1,25 @@
 #ifndef MESH_IMPLEMENTATION
 
 #include "dynlist.h"
+#include "effects/default_effect.h"
 
 #include <stdbool.h>
+
+#ifndef MESH_TYPE_PREFIX
+#define MESH_TYPE_PREFIX Default
+#endif
+#ifndef MESH_FUNCTION_PREFIX
+#define MESH_FUNCTION_PREFIX default_
+#endif
+#ifndef MESH_VERTEX_TYPE
+#define MESH_VERTEX_TYPE DefaultEffectVertex
+#endif
+#ifndef MESH_VERTEX_HAS_UVS
+#define MESH_VERTEX_HAS_UVS false
+#endif
+#ifndef MESH_VERTEX_HAS_NORMALS
+#define MESH_VERTEX_HAS_NORMALS false
+#endif
 
 #undef _CONCAT
 #undef CONCAT

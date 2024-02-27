@@ -1,31 +1,31 @@
-#include "simple_cube_scene.h"
+#include "solid_cube_scene.h"
 
 #include "matrix.h"
 #include "vector.h"
 #include "utility.h"
-#include "effects/simple_effect.h"
+#include "effects/default_effect.h"
 
 #include <SDL.h>
 
-static SimpleMesh make_cube_mesh(float side);
+static DefaultMesh make_cube_mesh(float side);
 
-SimpleCubeScene simple_cube_scene_make(const Graphics* graphics)
+SolidCubeScene solid_cube_scene_make(const Graphics* graphics)
 {
-  return (SimpleCubeScene){
+  return (SolidCubeScene){
     .mesh = make_cube_mesh(1.0f),
-    .pipeline = simple_pipeline_make(graphics),
+    .pipeline = default_pipeline_make(graphics),
     .theta_x = 0.0f,
     .theta_y = 0.0f,
     .theta_z = 0.0f,
   };
 }
 
-void simple_cube_scene_destroy(SimpleCubeScene* scene)
+void solid_cube_scene_destroy(SolidCubeScene* scene)
 {
-  simple_mesh_destroy(&scene->mesh);
+  default_mesh_destroy(&scene->mesh);
 }
 
-void simple_cube_scene_update(SimpleCubeScene* scene, float dt)
+void solid_cube_scene_update(SolidCubeScene* scene, float dt)
 {
   const uint8_t* key_states = SDL_GetKeyboardState(NULL);
 
@@ -56,7 +56,7 @@ void simple_cube_scene_update(SimpleCubeScene* scene, float dt)
   }
 }
 
-void simple_cube_scene_draw(SimpleCubeScene* scene)
+void solid_cube_scene_draw(SolidCubeScene* scene)
 {
   const Mat4 rotation_x = mat4_rotation_x(scene->theta_x);
   const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
@@ -66,16 +66,16 @@ void simple_cube_scene_draw(SimpleCubeScene* scene)
   Mat4 transform = mat4_mul(&translation, &rotation_x);
   transform = mat4_mul(&transform, &rotation_y);
   transform = mat4_mul(&transform, &rotation_z);
-  simple_effect_bind_transform(&scene->pipeline.effect, &transform);
+  default_effect_bind_transform(&scene->pipeline.effect, &transform);
 
-  simple_pipeline_draw(&scene->pipeline, &scene->mesh);
+  default_pipeline_draw(&scene->pipeline, &scene->mesh);
 }
 
-static SimpleMesh make_cube_mesh(float side)
+static DefaultMesh make_cube_mesh(float side)
 {
   const float half_side = side / 2.0f;
 
-  const SimpleEffectVertex vertices[] = {
+  const DefaultEffectVertex vertices[] = {
     // Near side
     { .pos = vec3_make(-half_side, -half_side, -half_side) },
     { .pos = vec3_make(half_side, -half_side, -half_side) },
@@ -121,7 +121,7 @@ static SimpleMesh make_cube_mesh(float side)
   const size_t num_vertices = 24;
   const size_t num_indices = 36;
 
-  SimpleMesh mesh = simple_mesh_make();
-  simple_mesh_load_from_arrays(&mesh, vertices, num_vertices, indices, num_indices);
+  DefaultMesh mesh = default_mesh_make();
+  default_mesh_load_from_arrays(&mesh, vertices, num_vertices, indices, num_indices);
   return mesh;
 }

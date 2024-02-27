@@ -1,4 +1,4 @@
-#include "simple_mesh.h"
+#include "default_mesh.h"
 
 #define MESH_IMPLEMENTATION
 #include "mesh.inc"
