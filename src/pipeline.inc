@@ -92,6 +92,7 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
                                         const GS_OUT* right_inc,
                                         float height);
 
+static bool triangle_visible(const VS_OUT* v0, const VS_OUT* v1, const VS_OUT* v2);
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
 PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics, const DepthBuffer* depth_buffer)
@@ -123,6 +124,8 @@ void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh)
     const VS_OUT* vs0 = dyn_list_at(&trans_verts, *i0);
     const VS_OUT* vs1 = dyn_list_at(&trans_verts, *i1);
     const VS_OUT* vs2 = dyn_list_at(&trans_verts, *i2);
+
+    if (!triangle_visible(vs0, vs1, vs2)) continue;
 
     GS_OUT gs0;
     GS_OUT gs1;
@@ -232,6 +235,14 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
     left = GS_OUT_ADD(&left, left_inc);
     right = GS_OUT_ADD(&right, right_inc);
   }
+}
+
+static bool triangle_visible(const VS_OUT* v0, const VS_OUT* v1, const VS_OUT* v2)
+{
+  // A triangle is visible iff its vertices have a clockwise winding after projection.
+  const Vec4 v = vec4_sub(&v1->pos, &v0->pos);
+  const Vec4 w = vec4_sub(&v2->pos, &v0->pos);
+  return v.x * w.y - v.y * w.x >= 0;
 }
 
 static void swap(const GS_OUT** v, const GS_OUT** w)
