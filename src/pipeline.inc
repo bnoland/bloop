@@ -72,6 +72,8 @@ void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh);
 
 #else
 
+#include "utility.h"
+
 #include <stddef.h>
 
 static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v);
@@ -212,15 +214,18 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
                                         const GS_OUT* right_inc,
                                         float height)
 {
-  const int y_start = ceil(left_start->pos.y - 0.5f);
-  const int y_end = ceil(left_start->pos.y + height - 0.5f);
+  const int screen_width = pipeline->graphics->screen_width;
+  const int screen_height = pipeline->graphics->screen_height;
+
+  const int y_start = clamp(ceil(left_start->pos.y - 0.5f), 0, screen_height);
+  const int y_end = clamp(ceil(left_start->pos.y + height - 0.5f), 0, screen_height);
 
   GS_OUT left = GS_OUT_MUL_ADD(left_start, left_inc, y_start + 0.5f - left_start->pos.y);
   GS_OUT right = GS_OUT_MUL_ADD(right_start, right_inc, y_start + 0.5f - right_start->pos.y);
 
   for (int y = y_start; y < y_end; y++) {
-    const int x_start = ceil(left.pos.x - 0.5f);
-    const int x_end = ceil(right.pos.x - 0.5f);
+    const int x_start = clamp(ceil(left.pos.x - 0.5f), 0, screen_width);
+    const int x_end = clamp(ceil(right.pos.x - 0.5f), 0, screen_width);
 
     const float width = right.pos.x - left.pos.x;
 

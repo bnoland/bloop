@@ -35,7 +35,6 @@ executable(
     'src/meshes/default_mesh.c',
     'src/meshes/color_mesh.c',
     'src/scenes/color_cube_scene.c',
-    'src/scenes/solid_cube_scene.c',
   ],
   dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],

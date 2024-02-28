@@ -94,8 +94,10 @@ void color_cube_scene_draw(ColorCubeScene* scene)
   const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
   const Mat4 rotation_z = mat4_rotation_z(scene->theta_z);
   const Mat4 translation = mat4_translation(scene->x, scene->y, scene->z);
+  const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 1.0f, 10.0f);
 
-  Mat4 transform = mat4_mul(&translation, &rotation_x);
+  Mat4 transform = mat4_mul(&projection, &translation);
+  transform = mat4_mul(&transform, &rotation_x);
   transform = mat4_mul(&transform, &rotation_y);
   transform = mat4_mul(&transform, &rotation_z);
   color_effect_bind_transform(&scene->pipeline.effect, &transform);
