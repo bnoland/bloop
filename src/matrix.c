@@ -113,7 +113,7 @@ Mat4 mat4_projection(float fov, float aspect_ratio, float near, float far)
 {
   const float fov_radians = degrees_to_radians(fov);
   const float width = 2.0f * near * tanf(fov_radians / 2.0f);
-  const float height = aspect_ratio * width;
+  const float height = width * (1.0f / aspect_ratio);
 
   Mat4 result = mat4_zero();
   result.elements[0][0] = 2.0f * near / width;

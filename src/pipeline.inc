@@ -132,11 +132,13 @@ void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh)
     GS_OUT gs2;
     GEOMETRY_SHADER(&pipeline->effect, vs0, vs1, vs2, &gs0, &gs1, &gs2, i);
 
-    if (!triangle_visible(&gs0, &gs1, &gs2)) continue;
+    // XXX: geometric clipping
 
     pipeline_transform_to_screen(pipeline, &gs0);
     pipeline_transform_to_screen(pipeline, &gs1);
     pipeline_transform_to_screen(pipeline, &gs2);
+
+    if (!triangle_visible(&gs0, &gs1, &gs2)) continue;
 
     pipeline_draw_triangle(pipeline, &gs0, &gs1, &gs2);
   }
@@ -146,8 +148,14 @@ void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh)
 
 static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v)
 {
+  // Perspective divide
+  v->pos.x /= v->pos.w;
+  v->pos.y /= v->pos.w;
+  v->pos.z /= v->pos.w;
+
   const size_t screen_width = pipeline->graphics->screen_width;
   const size_t screen_height = pipeline->graphics->screen_height;
+
   v->pos.x = (screen_width / 2.0f) * (v->pos.x + 1.0f);
   v->pos.y = (screen_height / 2.0f) * (-v->pos.y + 1.0f);
 }
@@ -244,10 +252,10 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
 
 static bool triangle_visible(const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
 {
-  // A triangle is visible iff its vertices have a clockwise winding after projection.
+  // A triangle is visible iff its vertices have a counter-clockwise winding in screen space.
   const Vec4 v = vec4_sub(&v1->pos, &v0->pos);
   const Vec4 w = vec4_sub(&v2->pos, &v0->pos);
-  return v.x * w.y - v.y * w.x >= 0;
+  return v.x * w.y - v.y * w.x < 0;
 }
 
 static void swap(const GS_OUT** v, const GS_OUT** w)

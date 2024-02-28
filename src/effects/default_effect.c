@@ -41,10 +41,6 @@ void default_effect_vertex_shader(const DefaultEffect* effect, const DefaultEffe
 {
   Vec4 in_pos = vec4_make(in->pos.x, in->pos.y, in->pos.z, 1.0f);
   out->pos = mat4_vec_mul(&effect->transform, &in_pos);
-
-  out->pos.x /= out->pos.w;
-  out->pos.y /= out->pos.w;
-  out->pos.z /= out->pos.w;
 }
 
 void default_effect_geometry_shader(const DefaultEffect* effect,

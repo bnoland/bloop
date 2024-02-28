@@ -90,6 +90,7 @@ void color_cube_scene_update(ColorCubeScene* scene, float dt)
 
 void color_cube_scene_draw(ColorCubeScene* scene)
 {
+  // XXX: Don't recompute on each draw.
   const Mat4 rotation_x = mat4_rotation_x(scene->theta_x);
   const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
   const Mat4 rotation_z = mat4_rotation_z(scene->theta_z);
