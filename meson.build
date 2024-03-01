@@ -15,31 +15,13 @@ m_dep = cc.find_library('m', required: false)
 
 sdl2_dep = dependency('sdl2')
 
+sources = []
 subdir('resources')
+subdir('src')
 
 executable(
   meson.project_name(),
-  sources: [
-    'src/main.c',
-    'src/graphics.c',
-    'src/vector.c',
-    'src/matrix.c',
-    'src/model.c',
-    'src/dynlist.c',
-    'src/utility.c',
-    'src/depth_buffer.c',
-    'src/effects/default_effect.c',
-    'src/effects/color_effect.c',
-    'src/effects/gouraud_effect.c',
-    'src/pipelines/default_pipeline.c',
-    'src/pipelines/color_pipeline.c',
-    'src/pipelines/gouraud_pipeline.c',
-    'src/meshes/default_mesh.c',
-    'src/meshes/color_mesh.c',
-    'src/meshes/gouraud_mesh.c',
-    'src/scenes/color_cube_scene.c',
-    'src/scenes/gouraud_scene.c',
-  ],
+  sources: sources,
   dependencies: [m_dep, sdl2_dep],
   include_directories: ['src'],
 )
