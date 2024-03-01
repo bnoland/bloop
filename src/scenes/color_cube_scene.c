@@ -22,7 +22,7 @@ ColorCubeScene color_cube_scene_make(const Graphics* graphics)
     .theta_z = 0.0f,
     .x = 0.0f,
     .y = 0.0f,
-    .z = -2.0f,
+    .z = -3.0f,
   };
 }
 
@@ -36,8 +36,8 @@ void color_cube_scene_update(ColorCubeScene* scene, float dt)
 {
   const uint8_t* key_states = SDL_GetKeyboardState(NULL);
 
-  const double angular_speed = 6.0;
-  const double speed = 5.0;
+  const double angular_speed = 3.0;
+  const double speed = 3.0;
 
   // Rotate around z-axis
   if (key_states[SDL_SCANCODE_E]) {

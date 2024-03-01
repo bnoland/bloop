@@ -72,10 +72,20 @@ void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh);
 
 #else
 
-#include "utility.h"
-
 #include <stddef.h>
 
+static void pipeline_process_vertices(const PIPELINE* pipeline, const DynList* vertices, const DynList* indices);
+static void pipeline_assemble_triangles(const PIPELINE* pipeline, const DynList* vertices, const DynList* indices);
+static void pipeline_process_triangle(const PIPELINE* pipeline,
+                                      const VS_OUT* v0,
+                                      const VS_OUT* v1,
+                                      const VS_OUT* v2,
+                                      size_t triangle_index);
+static void pipeline_post_process_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
+
+static void pipeline_clip_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
+static void pipeline_clip_triangle1(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
+static void pipeline_clip_triangle2(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
 static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v);
 
 static void pipeline_draw_triangle(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
@@ -108,47 +118,139 @@ PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics, const DepthBuf
 
 void PIPELINE_PREFIX(pipeline_draw)(const PIPELINE* pipeline, const MESH* mesh)
 {
+  depth_buffer_clear(pipeline->depth_buffer);
+  pipeline_process_vertices(pipeline, &mesh->vertices, &mesh->indices);
+}
+
+static void pipeline_process_vertices(const PIPELINE* pipeline, const DynList* vertices, const DynList* indices)
+{
   DynList trans_verts = dyn_list_make(sizeof(VS_OUT));
 
-  for (size_t i = 0; i < mesh->vertices.size; i++) {
-    const VERTEX* v = dyn_list_at(&mesh->vertices, i);
+  for (size_t i = 0; i < vertices->size; i++) {
+    const VERTEX* v = dyn_list_at(vertices, i);
     VS_OUT* vs = dyn_list_add_slot(&trans_verts);
     VERTEX_SHADER(&pipeline->effect, v, vs);
   }
 
-  depth_buffer_clear(pipeline->depth_buffer);
-
-  for (size_t i = 0; i < mesh->indices.size / 3; i++) {
-    const size_t* i0 = dyn_list_at(&mesh->indices, 3 * i);
-    const size_t* i1 = dyn_list_at(&mesh->indices, 3 * i + 1);
-    const size_t* i2 = dyn_list_at(&mesh->indices, 3 * i + 2);
-
-    const VS_OUT* vs0 = dyn_list_at(&trans_verts, *i0);
-    const VS_OUT* vs1 = dyn_list_at(&trans_verts, *i1);
-    const VS_OUT* vs2 = dyn_list_at(&trans_verts, *i2);
-
-    GS_OUT gs0;
-    GS_OUT gs1;
-    GS_OUT gs2;
-    GEOMETRY_SHADER(&pipeline->effect, vs0, vs1, vs2, &gs0, &gs1, &gs2, i);
-
-    // XXX: geometric clipping
-
-    pipeline_transform_to_screen(pipeline, &gs0);
-    pipeline_transform_to_screen(pipeline, &gs1);
-    pipeline_transform_to_screen(pipeline, &gs2);
-
-    if (!triangle_visible(&gs0, &gs1, &gs2)) continue;
-
-    pipeline_draw_triangle(pipeline, &gs0, &gs1, &gs2);
-  }
+  pipeline_assemble_triangles(pipeline, &trans_verts, indices);
 
   dyn_list_destroy(&trans_verts);
 }
 
+static void pipeline_assemble_triangles(const PIPELINE* pipeline, const DynList* vertices, const DynList* indices)
+{
+  for (size_t i = 0; i < indices->size / 3; i++) {
+    const size_t* i0 = dyn_list_at(indices, 3 * i);
+    const size_t* i1 = dyn_list_at(indices, 3 * i + 1);
+    const size_t* i2 = dyn_list_at(indices, 3 * i + 2);
+
+    const VS_OUT* v0 = dyn_list_at(vertices, *i0);
+    const VS_OUT* v1 = dyn_list_at(vertices, *i1);
+    const VS_OUT* v2 = dyn_list_at(vertices, *i2);
+
+    pipeline_process_triangle(pipeline, v0, v1, v2, i);
+  }
+}
+
+static void pipeline_process_triangle(const PIPELINE* pipeline,
+                                      const VS_OUT* v0,
+                                      const VS_OUT* v1,
+                                      const VS_OUT* v2,
+                                      size_t triangle_index)
+{
+  GS_OUT w0;
+  GS_OUT w1;
+  GS_OUT w2;
+  GEOMETRY_SHADER(&pipeline->effect, v0, v1, v2, &w0, &w1, &w2, triangle_index);
+
+  pipeline_clip_triangle(pipeline, &w0, &w1, &w2);
+}
+
+static void pipeline_post_process_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2)
+{
+  pipeline_transform_to_screen(pipeline, v0);
+  pipeline_transform_to_screen(pipeline, v1);
+  pipeline_transform_to_screen(pipeline, v2);
+
+  if (triangle_visible(v0, v1, v2)) {
+    pipeline_draw_triangle(pipeline, v0, v1, v2);
+  }
+}
+
+static void pipeline_clip_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2)
+{
+  // Is the triangle completely off screen?
+
+  if (v0->pos.x > v0->pos.w && v1->pos.x > v1->pos.w && v2->pos.x > v2->pos.w) return;
+  if (v0->pos.x < -v0->pos.w && v1->pos.x < -v1->pos.w && v2->pos.x < -v2->pos.w) return;
+
+  if (v0->pos.y > v0->pos.w && v1->pos.y > v1->pos.w && v2->pos.y > v2->pos.w) return;
+  if (v0->pos.y < -v0->pos.w && v1->pos.y < -v1->pos.w && v2->pos.y < -v2->pos.w) return;
+
+  if (v0->pos.z > v0->pos.w && v1->pos.z > v1->pos.w && v2->pos.z > v2->pos.w) return;
+  if (v0->pos.z < -v0->pos.w && v1->pos.z < -v1->pos.w && v2->pos.z < -v2->pos.w) return;
+
+  // Is part of the triangle off screen?
+
+  if (v0->pos.z < -v0->pos.w && v1->pos.z < -v1->pos.w) {
+    pipeline_clip_triangle2(pipeline, v0, v1, v2);
+    return;
+  }
+  if (v0->pos.z < -v0->pos.w && v2->pos.z < -v2->pos.w) {
+    pipeline_clip_triangle2(pipeline, v0, v2, v1);
+    return;
+  }
+  if (v1->pos.z < -v1->pos.w && v2->pos.z < -v2->pos.w) {
+    pipeline_clip_triangle2(pipeline, v1, v2, v0);
+    return;
+  }
+
+  if (v0->pos.z < -v0->pos.w) {
+    pipeline_clip_triangle1(pipeline, v0, v1, v2);
+    return;
+  }
+  if (v1->pos.z < -v1->pos.w) {
+    pipeline_clip_triangle1(pipeline, v1, v0, v2);
+    return;
+  }
+  if (v2->pos.z < -v2->pos.w) {
+    pipeline_clip_triangle1(pipeline, v2, v0, v1);
+    return;
+  }
+
+  // All of the triangle is on screen.
+
+  pipeline_post_process_triangle(pipeline, v0, v1, v2);
+}
+
+// `v0` is off screen.
+static void pipeline_clip_triangle1(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2)
+{
+  const float alpha0 = (-v1->pos.w - v1->pos.z) / (v0->pos.z + v0->pos.w - v1->pos.w - v1->pos.z);
+  const float alpha1 = (-v2->pos.w - v2->pos.z) / (v0->pos.z + v0->pos.w - v2->pos.w - v2->pos.z);
+
+  GS_OUT u = GS_OUT_INTERPOLATE(v0, v1, alpha0);
+  GS_OUT w = GS_OUT_INTERPOLATE(v0, v2, alpha1);
+  GS_OUT temp1 = u;  // XXX: Eliminate the need for this.
+  GS_OUT temp2 = *v2;  // XXX: Eliminate the need for this.
+  pipeline_post_process_triangle(pipeline, &temp1, &temp2, v1);
+  pipeline_post_process_triangle(pipeline, &w, v2, &u);
+}
+
+// `v0` and `v1` are off screen.
+static void pipeline_clip_triangle2(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2)
+{
+  const float alpha0 = (-v2->pos.w - v2->pos.z) / (v0->pos.z + v0->pos.w - v2->pos.w - v2->pos.z);
+  const float alpha1 = (-v2->pos.w - v2->pos.z) / (v1->pos.z + v1->pos.w - v2->pos.w - v2->pos.z);
+
+  GS_OUT u = GS_OUT_INTERPOLATE(v0, v2, alpha0);
+  GS_OUT w = GS_OUT_INTERPOLATE(v1, v2, alpha1);
+  pipeline_post_process_triangle(pipeline, &u, &w, v2);
+}
+
 static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v)
 {
-  // Perspective divide
+  // Perspective divide.
   v->pos.x /= v->pos.w;
   v->pos.y /= v->pos.w;
   v->pos.z /= v->pos.w;
@@ -225,15 +327,15 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
   const int screen_width = pipeline->graphics->screen_width;
   const int screen_height = pipeline->graphics->screen_height;
 
-  const int y_start = clamp(ceil(left_start->pos.y - 0.5f), 0, screen_height);
-  const int y_end = clamp(ceil(left_start->pos.y + height - 0.5f), 0, screen_height);
+  const int y_start = fmax(ceil(left_start->pos.y - 0.5f), 0);
+  const int y_end = fmin(ceil(left_start->pos.y + height - 0.5f), screen_height - 1);
 
   GS_OUT left = GS_OUT_MUL_ADD(left_start, left_inc, y_start + 0.5f - left_start->pos.y);
   GS_OUT right = GS_OUT_MUL_ADD(right_start, right_inc, y_start + 0.5f - right_start->pos.y);
 
   for (int y = y_start; y < y_end; y++) {
-    const int x_start = clamp(ceil(left.pos.x - 0.5f), 0, screen_width);
-    const int x_end = clamp(ceil(right.pos.x - 0.5f), 0, screen_width);
+    const int x_start = fmax(ceil(left.pos.x - 0.5f), 0);
+    const int x_end = fmin(ceil(right.pos.x - 0.5f), screen_width - 1);
 
     const float width = right.pos.x - left.pos.x;
 

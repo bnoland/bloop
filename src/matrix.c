@@ -120,14 +120,14 @@ Mat4 mat4_projection(float fov, float aspect_ratio, float near, float far)
   result.elements[1][1] = 2.0f * near / height;
   result.elements[2][2] = -(far + near) / (far - near);
   result.elements[2][3] = -2.0f * near * far / (far - near);
-  result.elements[3][2] = -1.0f / near;
+  result.elements[3][2] = -1.0f;
   return result;
 }
 
 Mat4 mat4_rotation_x(float angle)
 {
-  const double cos_angle = cos(angle);
-  const double sin_angle = sin(angle);
+  const float cos_angle = cos(angle);
+  const float sin_angle = sin(angle);
 
   Mat4 result = mat4_identity();
   result.elements[1][1] = cos_angle;
@@ -139,8 +139,8 @@ Mat4 mat4_rotation_x(float angle)
 
 Mat4 mat4_rotation_y(float angle)
 {
-  const double cos_angle = cos(angle);
-  const double sin_angle = sin(angle);
+  const float cos_angle = cos(angle);
+  const float sin_angle = sin(angle);
 
   Mat4 result = mat4_identity();
   result.elements[0][0] = cos_angle;
@@ -152,8 +152,8 @@ Mat4 mat4_rotation_y(float angle)
 
 Mat4 mat4_rotation_z(float angle)
 {
-  const double cos_angle = cos(angle);
-  const double sin_angle = sin(angle);
+  const float cos_angle = cos(angle);
+  const float sin_angle = sin(angle);
 
   Mat4 result = mat4_identity();
   result.elements[0][0] = cos_angle;
