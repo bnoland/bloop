@@ -111,13 +111,13 @@ static ColorMesh make_cube_mesh(float side)
   const float half_side = side / 2.0f;
 
   const ColorEffectVertex vertices[] = {
-    // Near side
+    // Far side
     { .pos = vec3_make(-half_side, -half_side, -half_side), .color = vec3_make(1.0f, 0.0f, 0.0f) },
     { .pos = vec3_make(half_side, -half_side, -half_side), .color = vec3_make(0.0f, 1.0f, 0.0f) },
     { .pos = vec3_make(-half_side, half_side, -half_side), .color = vec3_make(0.0f, 0.0f, 1.0f) },
     { .pos = vec3_make(half_side, half_side, -half_side), .color = vec3_make(1.0f, 1.0f, 0.0f) },
 
-    // Far side
+    // Near side
     { .pos = vec3_make(-half_side, -half_side, half_side), .color = vec3_make(1.0f, 0.0f, 0.0f) },
     { .pos = vec3_make(half_side, -half_side, half_side), .color = vec3_make(0.0f, 1.0f, 0.0f) },
     { .pos = vec3_make(-half_side, half_side, half_side), .color = vec3_make(0.0f, 0.0f, 1.0f) },
