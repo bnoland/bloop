@@ -35,11 +35,14 @@ GouraudEffectGSOut gouraud_effect_gsout_interpolate(const GouraudEffectGSOut* v,
 
 typedef struct
 {
+  Mat4 world_view;
+  Mat4 projection;
   Mat4 transform;
 } GouraudEffect;
 
 GouraudEffect gouraud_effect_make(void);
-void gouraud_effect_bind_transform(GouraudEffect* effect, const Mat4* transform);
+void gouraud_effect_bind_world_view(GouraudEffect* effect, const Mat4* world_view);
+void gouraud_effect_bind_projection(GouraudEffect* effect, const Mat4* projection);
 void gouraud_effect_vertex_shader(const GouraudEffect* effect, const GouraudEffectVertex* in, GouraudEffectVSOut* out);
 void gouraud_effect_geometry_shader(const GouraudEffect* effect,
                                     const GouraudEffectVSOut* in0,

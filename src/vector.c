@@ -105,6 +105,15 @@ float vec3_dot(const Vec3* v, const Vec3* w)
   return v->x * w->x + v->y * w->y + v->z * w->z;
 }
 
+Vec3 vec3_cross(const Vec3* v, const Vec3* w)
+{
+  return (Vec3){
+    .x = v->y * w->z - v->z * w->y,
+    .y = v->z * w->x - v->x * w->z,
+    .z = v->x * w->y - v->y * w->x,
+  };
+}
+
 Vec4 vec4_make(float x, float y, float z, float w)
 {
   return (Vec4){ .x = x, .y = y, .z = z, .w = w };
@@ -157,5 +166,20 @@ Vec4 vec4_interpolate(const Vec4* v, const Vec4* w, float alpha)
     .y = (1.0f - alpha) * v->y + alpha * w->y,
     .z = (1.0f - alpha) * v->z + alpha * w->z,
     .w = (1.0f - alpha) * v->w + alpha * w->w,
+  };
+}
+
+float vec4_dot(const Vec4* v, const Vec4* w)
+{
+  return v->x * w->x + v->y * w->y + v->z * w->z;
+}
+
+Vec4 vec4_cross(const Vec4* v, const Vec4* w)
+{
+  return (Vec4){
+    .x = v->y * w->z - v->z * w->y,
+    .y = v->z * w->x - v->x * w->z,
+    .z = v->x * w->y - v->y * w->x,
+    .w = 1.0f,
   };
 }

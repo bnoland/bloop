@@ -32,11 +32,14 @@ DefaultEffectGSOut default_effect_gsout_interpolate(const DefaultEffectGSOut* v,
 
 typedef struct
 {
+  Mat4 world_view;
+  Mat4 projection;
   Mat4 transform;
 } DefaultEffect;
 
 DefaultEffect default_effect_make(void);
-void default_effect_bind_transform(DefaultEffect* effect, const Mat4* transform);
+void default_effect_bind_world_view(DefaultEffect* effect, const Mat4* world_view);
+void default_effect_bind_projection(DefaultEffect* effect, const Mat4* projection);
 void default_effect_vertex_shader(const DefaultEffect* effect, const DefaultEffectVertex* in, DefaultEffectVSOut* out);
 void default_effect_geometry_shader(const DefaultEffect* effect,
                                     const DefaultEffectVSOut* in0,

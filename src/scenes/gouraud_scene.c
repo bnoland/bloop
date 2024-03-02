@@ -98,11 +98,13 @@ void gouraud_scene_draw(GouraudScene* scene)
   const Mat4 translation = mat4_translation(scene->x, scene->y, scene->z);
   const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 1.0f, 10.0f);
 
-  Mat4 transform = mat4_mul(&projection, &translation);
-  transform = mat4_mul(&transform, &rotation_x);
-  transform = mat4_mul(&transform, &rotation_y);
-  transform = mat4_mul(&transform, &rotation_z);
-  gouraud_effect_bind_transform(&scene->pipeline.effect, &transform);
+  Mat4 world_view = translation;
+  world_view = mat4_mul(&world_view, &rotation_x);
+  world_view = mat4_mul(&world_view, &rotation_y);
+  world_view = mat4_mul(&world_view, &rotation_z);
+
+  gouraud_effect_bind_world_view(&scene->pipeline.effect, &world_view);
+  gouraud_effect_bind_projection(&scene->pipeline.effect, &projection);
 
   gouraud_pipeline_draw(&scene->pipeline, &scene->mesh);
 }

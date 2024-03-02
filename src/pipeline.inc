@@ -83,6 +83,7 @@ static void pipeline_process_triangle(const PIPELINE* pipeline,
                                       size_t triangle_index);
 static void pipeline_post_process_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
 
+static bool pipeline_triangle_visible(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
 static void pipeline_clip_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
 static void pipeline_clip_triangle1(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
 static void pipeline_clip_triangle2(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
@@ -104,7 +105,6 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
                                         const GS_OUT* right_inc,
                                         float height);
 
-static bool pipeline_triangle_visible(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
 static void swap(const GS_OUT** v, const GS_OUT** w);
 
 PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics, const DepthBuffer* depth_buffer)
@@ -175,6 +175,19 @@ static void pipeline_post_process_triangle(const PIPELINE* pipeline, GS_OUT* v0,
   pipeline_transform_to_screen(pipeline, v2);
 
   pipeline_draw_triangle(pipeline, v0, v1, v2);
+}
+
+static bool pipeline_triangle_visible(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
+{
+  Vec4 camera_pos = vec4_make(0.0f, 0.0f, 0.0f, 1.0f);
+  camera_pos = mat4_vec_mul(&pipeline->effect.projection, &camera_pos);
+
+  const Vec4 u = vec4_sub(&v1->pos, &v0->pos);
+  const Vec4 v = vec4_sub(&v2->pos, &v0->pos);
+  const Vec4 w = vec4_sub(&v0->pos, &camera_pos);
+
+  const Vec4 n = vec4_cross(&u, &v);
+  return vec4_dot(&n, &w) >= 0;
 }
 
 static void pipeline_clip_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2)
@@ -352,21 +365,6 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
     left = GS_OUT_ADD(&left, left_inc);
     right = GS_OUT_ADD(&right, right_inc);
   }
-}
-
-static bool pipeline_triangle_visible(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
-{
-  // XXX: Do back-face culling a different way.
-
-  const Vec4 w0 = vec4_mul(&v0->pos, 1.0f / v0->pos.w);
-  const Vec4 w1 = vec4_mul(&v1->pos, 1.0f / v1->pos.w);
-  const Vec4 w2 = vec4_mul(&v2->pos, 1.0f / v2->pos.w);
-
-  const Vec4 v = vec4_sub(&w1, &w0);
-  const Vec4 w = vec4_sub(&w2, &w0);
-
-  // A triangle is visible iff its vertices have a counter-clockwise winding in NDC space.
-  return v.x * w.y - v.y * w.x >= 0;
 }
 
 static void swap(const GS_OUT** v, const GS_OUT** w)

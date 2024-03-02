@@ -32,9 +32,16 @@ DefaultEffect default_effect_make(void)
   return (DefaultEffect){ .transform = mat4_identity() };
 }
 
-void default_effect_bind_transform(DefaultEffect* effect, const Mat4* transform)
+void default_effect_bind_world_view(DefaultEffect* effect, const Mat4* world_view)
 {
-  effect->transform = *transform;
+  effect->world_view = *world_view;
+  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
+}
+
+void default_effect_bind_projection(DefaultEffect* effect, const Mat4* projection)
+{
+  effect->projection = *projection;
+  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
 }
 
 void default_effect_vertex_shader(const DefaultEffect* effect, const DefaultEffectVertex* in, DefaultEffectVSOut* out)

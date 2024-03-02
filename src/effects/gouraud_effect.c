@@ -29,12 +29,19 @@ GouraudEffectGSOut gouraud_effect_gsout_interpolate(const GouraudEffectGSOut* v,
 
 GouraudEffect gouraud_effect_make(void)
 {
-  return (GouraudEffect){ .transform = mat4_identity() };
+  return (GouraudEffect){ .world_view = mat4_identity() };
 }
 
-void gouraud_effect_bind_transform(GouraudEffect* effect, const Mat4* transform)
+void gouraud_effect_bind_world_view(GouraudEffect* effect, const Mat4* world_view)
 {
-  effect->transform = *transform;
+  effect->world_view = *world_view;
+  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
+}
+
+void gouraud_effect_bind_projection(GouraudEffect* effect, const Mat4* projection)
+{
+  effect->projection = *projection;
+  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
 }
 
 void gouraud_effect_vertex_shader(const GouraudEffect* effect, const GouraudEffectVertex* in, GouraudEffectVSOut* out)

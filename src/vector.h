@@ -43,6 +43,7 @@ Vec3 vec3_mul(const Vec3* v, float c);
 Vec3 vec3_mul_add(const Vec3* v, const Vec3* w, float c);
 Vec3 vec3_interpolate(const Vec3* v, const Vec3* w, float alpha);
 float vec3_dot(const Vec3* v, const Vec3* w);
+Vec3 vec3_cross(const Vec3* v, const Vec3* w);
 
 typedef struct
 {
@@ -65,5 +66,7 @@ Vec4 vec4_sub(const Vec4* v, const Vec4* w);
 Vec4 vec4_mul(const Vec4* v, float c);
 Vec4 vec4_mul_add(const Vec4* v, const Vec4* w, float c);
 Vec4 vec4_interpolate(const Vec4* v, const Vec4* w, float alpha);
+float vec4_dot(const Vec4* v, const Vec4* w);
+Vec4 vec4_cross(const Vec4* v, const Vec4* w);
 
 #endif
