@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include "scenes/gouraud_scene.h"
+#include "scenes/textured_cube_scene.h"
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ int main(void)
   }
 
   Graphics graphics = graphics_make(screen_width, screen_height);
-  GouraudScene scene = gouraud_scene_make(&graphics);
+  TexturedCubeScene scene = textured_cube_scene_make(&graphics);
 
   float last_time = 0.0f;
 
@@ -66,8 +66,8 @@ int main(void)
     }
 
     graphics_clear(&graphics, 0x000000ff);
-    gouraud_scene_update(&scene, dt);
-    gouraud_scene_draw(&scene);
+    textured_cube_scene_update(&scene, dt);
+    textured_cube_scene_draw(&scene);
 
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(screen_texture, NULL, graphics.pixel_buffer, screen_width * sizeof(Color));
@@ -75,7 +75,7 @@ int main(void)
     SDL_RenderPresent(renderer);
   }
 
-  gouraud_scene_destroy(&scene);
+  textured_cube_scene_destroy(&scene);
   graphics_destroy(&graphics);
 
   SDL_DestroyTexture(screen_texture);

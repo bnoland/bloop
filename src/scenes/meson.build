@@ -1,3 +1,3 @@
 sources += files(
-  'gouraud_scene.c',
+  'textured_cube_scene.c',
 )

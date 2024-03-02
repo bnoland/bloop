@@ -2,7 +2,10 @@
 
 Vec2 vec2_make(float x, float y)
 {
-  return (Vec2){ .x = x, .y = y };
+  return (Vec2){
+    .x = x,
+    .y = y,
+  };
 }
 
 Vec2 vec2_add(const Vec2* v, const Vec2* w)
@@ -52,7 +55,11 @@ float vec2_dot(const Vec2* v, const Vec2* w)
 
 Vec3 vec3_make(float x, float y, float z)
 {
-  return (Vec3){ .x = x, .y = y, .z = z };
+  return (Vec3){
+    .x = x,
+    .y = y,
+    .z = z,
+  };
 }
 
 Vec3 vec3_add(const Vec3* v, const Vec3* w)
@@ -116,7 +123,12 @@ Vec3 vec3_cross(const Vec3* v, const Vec3* w)
 
 Vec4 vec4_make(float x, float y, float z, float w)
 {
-  return (Vec4){ .x = x, .y = y, .z = z, .w = w };
+  return (Vec4){
+    .x = x,
+    .y = y,
+    .z = z,
+    .w = w,
+  };
 }
 
 Vec4 vec4_add(const Vec4* v, const Vec4* w)

@@ -5,6 +5,8 @@ sources += files(
   'main.c',
   'matrix.c',
   'model.c',
+  'stb_image.c',
+  'texture.c',
   'utility.c',
   'vector.c',
 )

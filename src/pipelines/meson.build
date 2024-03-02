@@ -1,4 +1,4 @@
 sources += files(
   'default_pipeline.c',
-  'gouraud_pipeline.c',
+  'texture_pipeline.c',
 )

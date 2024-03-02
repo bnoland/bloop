@@ -1,4 +1,4 @@
-#include "gouraud_pipeline.h"
+#include "texture_pipeline.h"
 
 #define PIPELINE_IMPLEMENTATION
 #include "pipeline.inc"

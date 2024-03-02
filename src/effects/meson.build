@@ -1,4 +1,4 @@
 sources += files(
   'default_effect.c',
-  'gouraud_effect.c',
+  'texture_effect.c',
 )
