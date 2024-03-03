@@ -1,4 +1,4 @@
-#include "textured_cube_scene.h"
+#include "teapot_scene.h"
 
 #include "matrix.h"
 #include "utility.h"
@@ -8,8 +8,9 @@
 #include <stdlib.h>
 
 static TextureMesh make_cube_mesh(float side);
+static void teapot_scene_update_camera(TeapotScene* scene);
 
-TexturedCubeScene textured_cube_scene_make(const Graphics* graphics)
+TeapotScene teapot_scene_make(const Graphics* graphics)
 {
   DepthBuffer* depth_buffer = depth_buffer_make(graphics->screen_width, graphics->screen_height);
 
@@ -19,100 +20,98 @@ TexturedCubeScene textured_cube_scene_make(const Graphics* graphics)
   TexturePipeline pipeline = texture_pipeline_make(graphics, depth_buffer);
   texture_effect_bind_texture(&pipeline.effect, texture);
 
-  const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 1.0f, 10.0f);
+  const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 0.01f, 10.0f);
   texture_effect_bind_projection(&pipeline.effect, &projection);
 
-  return (TexturedCubeScene){
+  const Vec3 camera_forward_base = vec3_make(0.0f, 0.0f, -1.0f);
+  const Vec3 camera_left_base = vec3_make(-1.0f, 0.0f, 0.0f);
+
+  TeapotScene scene = {
     .depth_buffer = depth_buffer,
     .mesh = make_cube_mesh(1.0f),
     .texture = texture,
     .pipeline = pipeline,
-    .theta_x = 0.0f,
-    .theta_y = 0.0f,
-    .theta_z = 0.0f,
-    .x = 0.0f,
-    .y = 0.0f,
-    .z = -3.0f,
+    .camera_pos = vec3_make(0.0f, 0.0f, 2.0f),
+    .camera_angles = vec3_make(0.0f, 0.0f, 0.0f),
+    .camera_forward_base = camera_forward_base,
+    .camera_left_base = camera_left_base,
+    .camera_forward = camera_forward_base,
+    .camera_left = camera_left_base,
   };
+
+  teapot_scene_update_camera(&scene);
+
+  return scene;
 }
 
-void textured_cube_scene_destroy(TexturedCubeScene* scene)
+void teapot_scene_destroy(TeapotScene* scene)
 {
   depth_buffer_destroy(scene->depth_buffer);
   texture_destroy(scene->texture);
   texture_mesh_destroy(&scene->mesh);
 }
 
-void textured_cube_scene_update(TexturedCubeScene* scene, float dt)
+void teapot_scene_update(TeapotScene* scene, float dt)
 {
   const uint8_t* key_states = SDL_GetKeyboardState(NULL);
 
   const double angular_speed = 3.0f;
   const double speed = 3.0f;
 
-  // Rotate around z-axis
-  if (key_states[SDL_SCANCODE_E]) {
-    scene->theta_z = wrap_angle(scene->theta_z + angular_speed * dt);
-  }
-  if (key_states[SDL_SCANCODE_D]) {
-    scene->theta_z = wrap_angle(scene->theta_z - angular_speed * dt);
-  }
+  bool did_update = false;
 
-  // Rotate around x-axis
-  if (key_states[SDL_SCANCODE_Q]) {
-    scene->theta_x = wrap_angle(scene->theta_x + angular_speed * dt);
-  }
-  if (key_states[SDL_SCANCODE_A]) {
-    scene->theta_x = wrap_angle(scene->theta_x - angular_speed * dt);
-  }
-
-  // Rotate around y-axis
   if (key_states[SDL_SCANCODE_W]) {
-    scene->theta_y = wrap_angle(scene->theta_y + angular_speed * dt);
+    scene->camera_pos = vec3_mul_add(&scene->camera_pos, &scene->camera_forward, speed * dt);
+    did_update = true;
   }
   if (key_states[SDL_SCANCODE_S]) {
-    scene->theta_y = wrap_angle(scene->theta_y - angular_speed * dt);
+    scene->camera_pos = vec3_mul_add(&scene->camera_pos, &scene->camera_forward, -speed * dt);
+    did_update = true;
+  }
+  if (key_states[SDL_SCANCODE_A]) {
+    scene->camera_pos = vec3_mul_add(&scene->camera_pos, &scene->camera_left, speed * dt);
+    did_update = true;
+  }
+  if (key_states[SDL_SCANCODE_D]) {
+    scene->camera_pos = vec3_mul_add(&scene->camera_pos, &scene->camera_left, -speed * dt);
+    did_update = true;
   }
 
-  // Move along z-axis
-  if (key_states[SDL_SCANCODE_UP]) {
-    scene->z -= speed * dt;
-  }
-  if (key_states[SDL_SCANCODE_DOWN]) {
-    scene->z += speed * dt;
-  }
-
-  // Move along x-axis
   if (key_states[SDL_SCANCODE_LEFT]) {
-    scene->x -= speed * dt;
+    scene->camera_angles.y = wrap_angle(scene->camera_angles.y + angular_speed * dt);
+    did_update = true;
   }
   if (key_states[SDL_SCANCODE_RIGHT]) {
-    scene->x += speed * dt;
+    scene->camera_angles.y = wrap_angle(scene->camera_angles.y - angular_speed * dt);
+    did_update = true;
   }
 
-  // Move along y-axis
-  if (key_states[SDL_SCANCODE_PAGEDOWN]) {
-    scene->y -= speed * dt;
-  }
-  if (key_states[SDL_SCANCODE_PAGEUP]) {
-    scene->y += speed * dt;
+  if (did_update) {
+    teapot_scene_update_camera(scene);
   }
 }
 
-void textured_cube_scene_draw(TexturedCubeScene* scene)
+static void teapot_scene_update_camera(TeapotScene* scene)
 {
-  const Mat4 rotation_x = mat4_rotation_x(scene->theta_x);
-  const Mat4 rotation_y = mat4_rotation_y(scene->theta_y);
-  const Mat4 rotation_z = mat4_rotation_z(scene->theta_z);
-  const Mat4 translation = mat4_translation(scene->x, scene->y, scene->z);
+  const Mat3 camera_rot_y = mat3_rotation_y(scene->camera_angles.y);
+  scene->camera_forward = mat3_vec_mul(&camera_rot_y, &scene->camera_forward_base);
+  scene->camera_left = mat3_vec_mul(&camera_rot_y, &scene->camera_left_base);
 
-  Mat4 world_view = translation;
-  world_view = mat4_mul(&world_view, &rotation_x);
-  world_view = mat4_mul(&world_view, &rotation_y);
-  world_view = mat4_mul(&world_view, &rotation_z);
+  const Mat4 world_rot_x = mat4_rotation_x(-scene->camera_angles.x);
+  const Mat4 world_rot_y = mat4_rotation_y(-scene->camera_angles.y);
+  const Mat4 world_rot_z = mat4_rotation_z(-scene->camera_angles.z);
+  const Mat4 world_trans = mat4_translation(-scene->camera_pos.x, -scene->camera_pos.y, -scene->camera_pos.z);
+
+  Mat4 world_view = world_rot_x;
+  world_view = mat4_mul(&world_view, &world_rot_y);
+  world_view = mat4_mul(&world_view, &world_rot_z);
+  world_view = mat4_mul(&world_view, &world_trans);
 
   texture_effect_bind_world_view(&scene->pipeline.effect, &world_view);
+}
 
+void teapot_scene_draw(TeapotScene* scene)
+{
   texture_pipeline_draw(&scene->pipeline, &scene->mesh);
 }
 

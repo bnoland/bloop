@@ -26,6 +26,45 @@ Mat3 mat3_identity(void)
   return result;
 }
 
+Mat3 mat3_rotation_x(float angle)
+{
+  const float cos_angle = cos(angle);
+  const float sin_angle = sin(angle);
+
+  Mat3 result = mat3_identity();
+  result.elements[1][1] = cos_angle;
+  result.elements[1][2] = -sin_angle;
+  result.elements[2][1] = sin_angle;
+  result.elements[2][2] = cos_angle;
+  return result;
+}
+
+Mat3 mat3_rotation_y(float angle)
+{
+  const float cos_angle = cos(angle);
+  const float sin_angle = sin(angle);
+
+  Mat3 result = mat3_identity();
+  result.elements[0][0] = cos_angle;
+  result.elements[0][2] = sin_angle;
+  result.elements[2][0] = -sin_angle;
+  result.elements[2][2] = cos_angle;
+  return result;
+}
+
+Mat3 mat3_rotation_z(float angle)
+{
+  const float cos_angle = cos(angle);
+  const float sin_angle = sin(angle);
+
+  Mat3 result = mat3_identity();
+  result.elements[0][0] = cos_angle;
+  result.elements[0][1] = -sin_angle;
+  result.elements[1][0] = sin_angle;
+  result.elements[1][1] = cos_angle;
+  return result;
+}
+
 Mat3 mat3_add(const Mat3* a, const Mat3* b)
 {
   Mat3 result;

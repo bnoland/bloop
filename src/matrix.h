@@ -10,6 +10,9 @@ typedef struct
 
 Mat3 mat3_zero(void);
 Mat3 mat3_identity(void);
+Mat3 mat3_rotation_x(float angle);
+Mat3 mat3_rotation_y(float angle);
+Mat3 mat3_rotation_z(float angle);
 Mat3 mat3_add(const Mat3* a, const Mat3* b);
 Mat3 mat3_sub(const Mat3* a, const Mat3* b);
 Mat3 mat3_mul(const Mat3* a, const Mat3* b);
