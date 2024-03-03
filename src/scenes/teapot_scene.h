@@ -3,17 +3,15 @@
 
 #include "graphics.h"
 #include "depth_buffer.h"
-#include "texture.h"
 #include "vector.h"
-#include "pipelines/texture_pipeline.h"
-#include "meshes/texture_mesh.h"
+#include "pipelines/phong_pipeline.h"
+#include "meshes/normal_mesh.h"
 
 typedef struct
 {
   DepthBuffer* depth_buffer;
-  TextureMesh mesh;
-  TexturePipeline pipeline;
-  Texture* texture;
+  NormalMesh mesh;
+  PhongPipeline pipeline;
   Vec3 camera_pos;
   Vec3 camera_angles;
   Vec3 camera_forward_base;

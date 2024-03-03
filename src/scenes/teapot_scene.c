@@ -2,36 +2,33 @@
 
 #include "matrix.h"
 #include "utility.h"
-#include "effects/texture_effect.h"
+#include "effects/phong_effect.h"
 
 #include <SDL.h>
 #include <stdlib.h>
 
-static TextureMesh make_cube_mesh(float side);
 static void teapot_scene_update_camera(TeapotScene* scene);
 
 TeapotScene teapot_scene_make(const Graphics* graphics)
 {
   DepthBuffer* depth_buffer = depth_buffer_make(graphics->screen_width, graphics->screen_height);
+  PhongPipeline pipeline = phong_pipeline_make(graphics, depth_buffer);
 
-  Texture* texture = texture_make();
-  texture_load_from_file(texture, "resources/rocky.png");
-
-  TexturePipeline pipeline = texture_pipeline_make(graphics, depth_buffer);
-  texture_effect_bind_texture(&pipeline.effect, texture);
+  // XXX: Will probably want to compute normals from faces + interpolate.
+  NormalMesh mesh = normal_mesh_make();
+  normal_mesh_load_from_file(&mesh, "resources/teapot.obj", false, false);
 
   const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 0.01f, 10.0f);
-  texture_effect_bind_projection(&pipeline.effect, &projection);
+  phong_effect_bind_projection(&pipeline.effect, &projection);
 
   const Vec3 camera_forward_base = vec3_make(0.0f, 0.0f, -1.0f);
   const Vec3 camera_left_base = vec3_make(-1.0f, 0.0f, 0.0f);
 
   TeapotScene scene = {
     .depth_buffer = depth_buffer,
-    .mesh = make_cube_mesh(1.0f),
-    .texture = texture,
+    .mesh = mesh,
     .pipeline = pipeline,
-    .camera_pos = vec3_make(0.0f, 0.0f, 2.0f),
+    .camera_pos = vec3_make(0.0f, 0.0f, 8.0f),
     .camera_angles = vec3_make(0.0f, 0.0f, 0.0f),
     .camera_forward_base = camera_forward_base,
     .camera_left_base = camera_left_base,
@@ -47,8 +44,7 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
 void teapot_scene_destroy(TeapotScene* scene)
 {
   depth_buffer_destroy(scene->depth_buffer);
-  texture_destroy(scene->texture);
-  texture_mesh_destroy(&scene->mesh);
+  normal_mesh_destroy(&scene->mesh);
 }
 
 void teapot_scene_update(TeapotScene* scene, float dt)
@@ -107,65 +103,10 @@ static void teapot_scene_update_camera(TeapotScene* scene)
   world_view = mat4_mul(&world_view, &world_rot_z);
   world_view = mat4_mul(&world_view, &world_trans);
 
-  texture_effect_bind_world_view(&scene->pipeline.effect, &world_view);
+  phong_effect_bind_world_view(&scene->pipeline.effect, &world_view);
 }
 
 void teapot_scene_draw(TeapotScene* scene)
 {
-  texture_pipeline_draw(&scene->pipeline, &scene->mesh);
-}
-
-static TextureMesh make_cube_mesh(float side)
-{
-  const float half_side = side / 2.0f;
-
-  const TextureEffectVertex vertices[] = {
-    // Far side
-    { .pos = vec3_make(-half_side, -half_side, -half_side), .uv = vec2_make(0.0f, 0.0f) },
-    { .pos = vec3_make(half_side, -half_side, -half_side), .uv = vec2_make(1.0f, 0.0f) },
-    { .pos = vec3_make(-half_side, half_side, -half_side), .uv = vec2_make(0.0f, 1.0f) },
-    { .pos = vec3_make(half_side, half_side, -half_side), .uv = vec2_make(1.0f, 1.0f) },
-
-    // Near side
-    { .pos = vec3_make(-half_side, -half_side, half_side), .uv = vec2_make(0.0f, 0.0f) },
-    { .pos = vec3_make(half_side, -half_side, half_side), .uv = vec2_make(1.0f, 0.0f) },
-    { .pos = vec3_make(-half_side, half_side, half_side), .uv = vec2_make(0.0f, 1.0f) },
-    { .pos = vec3_make(half_side, half_side, half_side), .uv = vec2_make(1.0f, 1.0f) },
-
-    // Left side
-    { .pos = vec3_make(-half_side, -half_side, -half_side), .uv = vec2_make(0.0f, 0.0f) },
-    { .pos = vec3_make(-half_side, half_side, -half_side), .uv = vec2_make(1.0f, 0.0f) },
-    { .pos = vec3_make(-half_side, -half_side, half_side), .uv = vec2_make(0.0f, 1.0f) },
-    { .pos = vec3_make(-half_side, half_side, half_side), .uv = vec2_make(1.0f, 1.0f) },
-
-    // Right side
-    { .pos = vec3_make(half_side, -half_side, -half_side), .uv = vec2_make(0.0f, 0.0f) },
-    { .pos = vec3_make(half_side, half_side, -half_side), .uv = vec2_make(1.0f, 0.0f) },
-    { .pos = vec3_make(half_side, -half_side, half_side), .uv = vec2_make(0.0f, 1.0f) },
-    { .pos = vec3_make(half_side, half_side, half_side), .uv = vec2_make(1.0f, 1.0f) },
-
-    // Bottom side
-    { .pos = vec3_make(-half_side, -half_side, -half_side), .uv = vec2_make(0.0f, 0.0f) },
-    { .pos = vec3_make(half_side, -half_side, -half_side), .uv = vec2_make(1.0f, 0.0f) },
-    { .pos = vec3_make(-half_side, -half_side, half_side), .uv = vec2_make(0.0f, 1.0f) },
-    { .pos = vec3_make(half_side, -half_side, half_side), .uv = vec2_make(1.0f, 1.0f) },
-
-    // Top side
-    { .pos = vec3_make(-half_side, half_side, -half_side), .uv = vec2_make(0.0f, 0.0f) },
-    { .pos = vec3_make(half_side, half_side, -half_side), .uv = vec2_make(1.0f, 0.0f) },
-    { .pos = vec3_make(-half_side, half_side, half_side), .uv = vec2_make(0.0f, 1.0f) },
-    { .pos = vec3_make(half_side, half_side, half_side), .uv = vec2_make(1.0f, 1.0f) },
-  };
-
-  const size_t indices[] = {
-    0,  2,  1,  2,  3,  1,  4,  5,  7,  4,  7,  6,  8,  10, 9,  10, 11, 9,
-    12, 13, 15, 12, 15, 14, 16, 17, 18, 18, 17, 19, 20, 23, 21, 20, 22, 23,
-  };
-
-  const size_t num_vertices = 24;
-  const size_t num_indices = 36;
-
-  TextureMesh mesh = texture_mesh_make();
-  texture_mesh_load_from_arrays(&mesh, vertices, num_vertices, indices, num_indices);
-  return mesh;
+  phong_pipeline_draw(&scene->pipeline, &scene->mesh);
 }

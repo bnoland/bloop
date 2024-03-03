@@ -5,14 +5,11 @@
 #include "matrix.h"
 #include "graphics.h"
 #include "texture.h"
+#include "meshes/texture_mesh.h"
 
 #include <stddef.h>
 
-typedef struct
-{
-  Vec3 pos;
-  Vec2 uv;
-} TextureEffectVertex;
+typedef TextureVertex TextureEffectVertex;
 
 typedef struct
 {
