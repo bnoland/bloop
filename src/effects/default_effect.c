@@ -37,9 +37,10 @@ DefaultEffectGSOut default_effect_gsout_interpolate(const DefaultEffectGSOut* v,
   };
 }
 
-DefaultEffect default_effect_make(void)
+DefaultEffect default_effect_make(const Graphics* graphics)
 {
   return (DefaultEffect){
+    .graphics = graphics,
     .transform = mat4_identity(),
   };
 }
@@ -83,4 +84,22 @@ Color default_effect_pixel_shader(const DefaultEffect* effect, const DefaultEffe
   (void)effect;
   (void)in;
   return 0xffffffff;
+}
+
+DefaultEffectGSOut default_effect_screen_transform(const DefaultEffect* effect, const DefaultEffectGSOut* in)
+{
+  DefaultEffectGSOut out;
+
+  out.pos.x = in->pos.x / in->pos.w;
+  out.pos.y = in->pos.y / in->pos.w;
+  out.pos.z = in->pos.z / in->pos.w;
+  out.pos.w = 1.0f;
+
+  const size_t screen_width = effect->graphics->screen_width;
+  const size_t screen_height = effect->graphics->screen_height;
+
+  out.pos.x = (screen_width / 2.0f) * (out.pos.x + 1.0f);
+  out.pos.y = (screen_height / 2.0f) * (-out.pos.y + 1.0f);
+
+  return out;
 }

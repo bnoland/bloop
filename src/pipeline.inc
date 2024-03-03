@@ -41,24 +41,25 @@
 #undef GEOMETRY_SHADER
 #undef PIXEL_SHADER
 
-#define _CONCAT(x, y)         x##y
-#define CONCAT(x, y)          _CONCAT(x, y)
-#define PIPELINE_PREFIX(name) CONCAT(PIPELINE_FUNCTION_PREFIX, name)
-#define PIPELINE              CONCAT(PIPELINE_TYPE_PREFIX, Pipeline)
-#define MESH                  PIPELINE_MESH_TYPE
-#define EFFECT                PIPELINE_EFFECT_TYPE
-#define VERTEX                CONCAT(PIPELINE_EFFECT_TYPE, Vertex)
-#define VS_OUT                CONCAT(PIPELINE_EFFECT_TYPE, VSOut)
-#define GS_OUT                CONCAT(PIPELINE_EFFECT_TYPE, GSOut)
-#define GS_OUT_ADD            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_add)
-#define GS_OUT_SUB            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_sub)
-#define GS_OUT_MUL            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_mul)
-#define GS_OUT_MUL_ADD        CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_mul_add)
-#define GS_OUT_INTERPOLATE    CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_interpolate)
-#define EFFECT_MAKE           CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, make)
-#define VERTEX_SHADER         CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, vertex_shader)
-#define GEOMETRY_SHADER       CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, geometry_shader)
-#define PIXEL_SHADER          CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, pixel_shader)
+#define _CONCAT(x, y)           x##y
+#define CONCAT(x, y)            _CONCAT(x, y)
+#define PIPELINE_PREFIX(name)   CONCAT(PIPELINE_FUNCTION_PREFIX, name)
+#define PIPELINE                CONCAT(PIPELINE_TYPE_PREFIX, Pipeline)
+#define MESH                    PIPELINE_MESH_TYPE
+#define EFFECT                  PIPELINE_EFFECT_TYPE
+#define VERTEX                  CONCAT(PIPELINE_EFFECT_TYPE, Vertex)
+#define VS_OUT                  CONCAT(PIPELINE_EFFECT_TYPE, VSOut)
+#define GS_OUT                  CONCAT(PIPELINE_EFFECT_TYPE, GSOut)
+#define GS_OUT_ADD              CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_add)
+#define GS_OUT_SUB              CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_sub)
+#define GS_OUT_MUL              CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_mul)
+#define GS_OUT_MUL_ADD          CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_mul_add)
+#define GS_OUT_INTERPOLATE      CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, gsout_interpolate)
+#define EFFECT_MAKE             CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, make)
+#define EFFECT_SCREEN_TRANSFORM CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, screen_transform)
+#define VERTEX_SHADER           CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, vertex_shader)
+#define GEOMETRY_SHADER         CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, geometry_shader)
+#define PIXEL_SHADER            CONCAT(PIPELINE_EFFECT_FUNCTION_PREFIX, pixel_shader)
 
 typedef struct
 {
@@ -87,7 +88,6 @@ static bool pipeline_triangle_visible(const PIPELINE* pipeline, const GS_OUT* v0
 static void pipeline_clip_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
 static void pipeline_clip_triangle1(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
 static void pipeline_clip_triangle2(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2);
-static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v);
 
 static void pipeline_draw_triangle(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2);
 static void pipeline_draw_triangle_flat_bottom(const PIPELINE* pipeline,
@@ -112,7 +112,7 @@ PIPELINE PIPELINE_PREFIX(pipeline_make)(const Graphics* graphics, const DepthBuf
   return (PIPELINE){
     .graphics = graphics,
     .depth_buffer = depth_buffer,
-    .effect = EFFECT_MAKE(),
+    .effect = EFFECT_MAKE(graphics),
   };
 }
 
@@ -170,11 +170,11 @@ static void pipeline_process_triangle(const PIPELINE* pipeline,
 
 static void pipeline_post_process_triangle(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT* v1, GS_OUT* v2)
 {
-  pipeline_transform_to_screen(pipeline, v0);
-  pipeline_transform_to_screen(pipeline, v1);
-  pipeline_transform_to_screen(pipeline, v2);
+  const GS_OUT w0 = EFFECT_SCREEN_TRANSFORM(&pipeline->effect, v0);
+  const GS_OUT w1 = EFFECT_SCREEN_TRANSFORM(&pipeline->effect, v1);
+  const GS_OUT w2 = EFFECT_SCREEN_TRANSFORM(&pipeline->effect, v2);
 
-  pipeline_draw_triangle(pipeline, v0, v1, v2);
+  pipeline_draw_triangle(pipeline, &w0, &w1, &w2);
 }
 
 static bool pipeline_triangle_visible(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)
@@ -261,20 +261,6 @@ static void pipeline_clip_triangle2(const PIPELINE* pipeline, GS_OUT* v0, GS_OUT
   GS_OUT u = GS_OUT_INTERPOLATE(v0, v2, alpha0);
   GS_OUT w = GS_OUT_INTERPOLATE(v1, v2, alpha1);
   pipeline_post_process_triangle(pipeline, &u, &w, v2);
-}
-
-static void pipeline_transform_to_screen(const PIPELINE* pipeline, GS_OUT* v)
-{
-  // Perspective divide.
-  v->pos.x /= v->pos.w;
-  v->pos.y /= v->pos.w;
-  v->pos.z /= v->pos.w;
-
-  const size_t screen_width = pipeline->graphics->screen_width;
-  const size_t screen_height = pipeline->graphics->screen_height;
-
-  v->pos.x = (screen_width / 2.0f) * (v->pos.x + 1.0f);
-  v->pos.y = (screen_height / 2.0f) * (-v->pos.y + 1.0f);
 }
 
 static void pipeline_draw_triangle(const PIPELINE* pipeline, const GS_OUT* v0, const GS_OUT* v1, const GS_OUT* v2)

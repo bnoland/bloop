@@ -40,9 +40,10 @@ typedef struct
   Mat4 projection;
   Mat4 transform;
   const Texture* texture;
+  const Graphics* graphics;
 } TextureEffect;
 
-TextureEffect texture_effect_make(void);
+TextureEffect texture_effect_make(const Graphics* graphics);
 void texture_effect_bind_world_view(TextureEffect* effect, const Mat4* world_view);
 void texture_effect_bind_projection(TextureEffect* effect, const Mat4* projection);
 void texture_effect_bind_texture(TextureEffect* effect, const Texture* texture);
@@ -56,5 +57,6 @@ void texture_effect_geometry_shader(const TextureEffect* effect,
                                     TextureEffectGSOut* out2,
                                     size_t triangle_index);
 Color texture_effect_pixel_shader(const TextureEffect* effect, const TextureEffectGSOut* in);
+TextureEffectGSOut texture_effect_screen_transform(const TextureEffect* effect, const TextureEffectGSOut* in);
 
 #endif

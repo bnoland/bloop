@@ -42,9 +42,10 @@ TextureEffectGSOut texture_effect_gsout_interpolate(const TextureEffectGSOut* v,
   };
 }
 
-TextureEffect texture_effect_make(void)
+TextureEffect texture_effect_make(const Graphics* graphics)
 {
   return (TextureEffect){
+    .graphics = graphics,
     .transform = mat4_identity(),
   };
 }
@@ -97,5 +98,29 @@ void texture_effect_geometry_shader(const TextureEffect* effect,
 
 Color texture_effect_pixel_shader(const TextureEffect* effect, const TextureEffectGSOut* in)
 {
-  return texture_uv_at(effect->texture, in->uv.x, in->uv.y);
+  const float z = 1.0f / in->pos.w;
+  const float u = in->uv.x * z;
+  const float v = in->uv.y * z;
+  return texture_uv_at(effect->texture, u, v);
+}
+
+TextureEffectGSOut texture_effect_screen_transform(const TextureEffect* effect, const TextureEffectGSOut* in)
+{
+  TextureEffectGSOut out;
+
+  out.pos.x = in->pos.x / in->pos.w;
+  out.pos.y = in->pos.y / in->pos.w;
+  out.pos.z = in->pos.z / in->pos.w;
+  out.pos.w = -1.0f / in->pos.w;
+
+  const size_t screen_width = effect->graphics->screen_width;
+  const size_t screen_height = effect->graphics->screen_height;
+
+  out.pos.x = (screen_width / 2.0f) * (out.pos.x + 1.0f);
+  out.pos.y = (screen_height / 2.0f) * (-out.pos.y + 1.0f);
+
+  out.uv.x = in->uv.x * out.pos.w;
+  out.uv.y = in->uv.y * out.pos.w;
+
+  return out;
 }
