@@ -54,22 +54,22 @@ PhongEffect phong_effect_make(const Graphics* graphics)
   };
 }
 
-void phong_effect_set_world_view(PhongEffect* effect, const Mat4* world_view)
+void phong_effect_set_world(PhongEffect* effect, const Mat4* world)
 {
-  effect->world_view = *world_view;
-  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
+  effect->world = *world;
+  effect->proj_world = mat4_mul(&effect->projection, &effect->world);
 }
 
 void phong_effect_set_projection(PhongEffect* effect, const Mat4* projection)
 {
   effect->projection = *projection;
-  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
+  effect->proj_world = mat4_mul(&effect->projection, &effect->world);
 }
 
 void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos)
 {
   const Vec4 pos = vec4_make(light_pos->x, light_pos->y, light_pos->z, 1.0f);
-  effect->light_pos = mat4_vec_mul(&effect->world_view, &pos);
+  effect->light_pos = mat4_vec_mul(&effect->world, &pos);
 }
 
 void phong_effect_set_diffuse_light(PhongEffect* effect, const Vec3* light)
@@ -105,9 +105,9 @@ void phong_effect_vertex_shader(const PhongEffect* effect, const PhongEffectVert
   const Vec4 in_pos = vec4_make(in->pos.x, in->pos.y, in->pos.z, 1.0f);
   const Vec4 in_normal = vec4_make(in->normal.x, in->normal.y, in->normal.z, 0.0f);
 
-  out->pos = mat4_vec_mul(&effect->transform, &in_pos);
-  out->world_pos = mat4_vec_mul(&effect->world_view, &in_pos);
-  out->normal = mat4_vec_mul(&effect->world_view, &in_normal);
+  out->pos = mat4_vec_mul(&effect->proj_world, &in_pos);
+  out->world_pos = mat4_vec_mul(&effect->world, &in_pos);
+  out->normal = mat4_vec_mul(&effect->world, &in_normal);
 }
 
 void phong_effect_geometry_shader(const PhongEffect* effect,

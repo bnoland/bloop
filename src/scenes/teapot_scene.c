@@ -111,12 +111,12 @@ static void teapot_scene_update_camera(TeapotScene* scene)
   const Mat4 world_rot_z = mat4_rotation_z(-scene->camera_angles.z);
   const Mat4 world_trans = mat4_translation(-scene->camera_pos.x, -scene->camera_pos.y, -scene->camera_pos.z);
 
-  Mat4 world_view = world_rot_x;
-  world_view = mat4_mul(&world_view, &world_rot_y);
-  world_view = mat4_mul(&world_view, &world_rot_z);
-  world_view = mat4_mul(&world_view, &world_trans);
+  Mat4 world = world_rot_x;
+  world = mat4_mul(&world, &world_rot_y);
+  world = mat4_mul(&world, &world_rot_z);
+  world = mat4_mul(&world, &world_trans);
 
-  phong_effect_set_world_view(&scene->pipeline.effect, &world_view);
+  phong_effect_set_world(&scene->pipeline.effect, &world);
 }
 
 void teapot_scene_draw(TeapotScene* scene)

@@ -33,9 +33,9 @@ PhongEffectGSOut phong_effect_gsout_interpolate(const PhongEffectGSOut* v, const
 typedef struct
 {
   const Graphics* graphics;
-  Mat4 world_view;
+  Mat4 world;
   Mat4 projection;
-  Mat4 transform;
+  Mat4 proj_world;
   Vec4 light_pos;
   Vec3 ambient_light;
   Vec3 diffuse_light;
@@ -49,7 +49,7 @@ typedef struct
 
 PhongEffect phong_effect_make(const Graphics* graphics);
 
-void phong_effect_set_world_view(PhongEffect* effect, const Mat4* world_view);
+void phong_effect_set_world(PhongEffect* effect, const Mat4* world);
 void phong_effect_set_projection(PhongEffect* effect, const Mat4* projection);
 
 void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos);
