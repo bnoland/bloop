@@ -47,6 +47,13 @@ void* dyn_list_add_slot(DynList* list)
   return dest;
 }
 
+void* dyn_list_mutable_at(DynList* list, size_t index)
+{
+  assert(index < list->size);
+  const size_t offset = index * list->type_size;
+  return list->buffer + offset;
+}
+
 const void* dyn_list_at(const DynList* list, size_t index)
 {
   assert(index < list->size);

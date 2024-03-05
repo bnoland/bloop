@@ -14,7 +14,7 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
   DepthBuffer* depth_buffer = depth_buffer_make(graphics->screen_width, graphics->screen_height);
 
   NormalMesh mesh = normal_mesh_make();
-  normal_mesh_load_from_file(&mesh, "resources/suzanne.obj", false, true);
+  normal_mesh_load_from_file(&mesh, "resources/teapot.obj", false, false);
   normal_mesh_interpolate_normals(&mesh);
 
   PhongPipeline pipeline = phong_pipeline_make(graphics, depth_buffer);
@@ -22,17 +22,20 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
   const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 0.01f, 10.0f);
   phong_effect_set_projection(&pipeline.effect, &projection);
 
-  const Vec3 light_pos = vec3_make(0.0f, 0.0f, 1.5f);
-  const Vec3 diffuse_light = vec3_make(1.0f, 1.0f, 1.0f);
-  const Vec3 ambient_light = vec3_make(0.1f, 0.1f, 0.1f);
-  const Vec3 material_color = vec3_make(0.8f, 0.85f, 1.0f);
+  const Vec3 light_pos = vec3_make(0.0f, 1.5f, 2.5f);
+  const Vec3 ambient_light = vec3_make(0.24725f, 0.2245f, 0.0645f);
+  const Vec3 diffuse_light = vec3_make(0.34615f, 0.3143f, 0.0903f);
+  const Vec3 specular_light = vec3_make(0.797357f, 0.723991f, 0.208006f);
+  const Vec3 material_color = vec3_make(1.0f, 1.0f, 1.0f);
 
   phong_effect_set_light_pos(&pipeline.effect, &light_pos);
   phong_effect_set_ambient_light(&pipeline.effect, &ambient_light);
   phong_effect_set_diffuse_light(&pipeline.effect, &diffuse_light);
+  phong_effect_set_specular_light(&pipeline.effect, &specular_light);
   phong_effect_set_material_color(&pipeline.effect, &material_color);
-  phong_effect_set_attenuation(&pipeline.effect, 2.619f, 1.0f, 0.382f);
-  phong_effect_set_specular(&pipeline.effect, 0.6f, 60.0f);
+  phong_effect_set_attenuation(&pipeline.effect, 0.1f, 0.1f, 0.1f);
+  phong_effect_set_light_coefficients(&pipeline.effect, 1.0f, 1.0f, 1.0f);
+  phong_effect_set_specular_power(&pipeline.effect, 83.2f);
 
   const Vec3 camera_forward_base = vec3_make(0.0f, 0.0f, -1.0f);
   const Vec3 camera_left_base = vec3_make(-1.0f, 0.0f, 0.0f);
@@ -41,7 +44,7 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
     .depth_buffer = depth_buffer,
     .mesh = mesh,
     .pipeline = pipeline,
-    .camera_pos = vec3_make(0.0f, 0.0f, 3.0f),
+    .camera_pos = vec3_make(0.0f, 1.5f, 6.0f),
     .camera_angles = vec3_make(0.0f, 0.0f, 0.0f),
     .camera_forward_base = camera_forward_base,
     .camera_left_base = camera_left_base,

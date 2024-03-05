@@ -72,14 +72,19 @@ void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos)
   effect->light_pos = mat4_vec_mul(&effect->world, &pos);
 }
 
+void phong_effect_set_ambient_light(PhongEffect* effect, const Vec3* light)
+{
+  effect->ambient_light = *light;
+}
+
 void phong_effect_set_diffuse_light(PhongEffect* effect, const Vec3* light)
 {
   effect->diffuse_light = *light;
 }
 
-void phong_effect_set_ambient_light(PhongEffect* effect, const Vec3* light)
+void phong_effect_set_specular_light(PhongEffect* effect, const Vec3* light)
 {
-  effect->ambient_light = *light;
+  effect->specular_light = *light;
 }
 
 void phong_effect_set_material_color(PhongEffect* effect, const Vec3* color)
@@ -89,14 +94,20 @@ void phong_effect_set_material_color(PhongEffect* effect, const Vec3* color)
 
 void phong_effect_set_attenuation(PhongEffect* effect, float quadratic, float linear, float constant)
 {
-  effect->quadratic_atten = quadratic;
-  effect->linear_atten = linear;
-  effect->constant_atten = constant;
+  effect->quadratic_attenuation = quadratic;
+  effect->linear_attenuation = linear;
+  effect->constant_attenuation = constant;
 }
 
-void phong_effect_set_specular(PhongEffect* effect, float intensity, float power)
+void phong_effect_set_light_coefficients(PhongEffect* effect, float ambient, float diffuse, float specular)
 {
-  effect->specular_intensity = intensity;
+  effect->ambient_coeff = ambient;
+  effect->diffuse_coeff = diffuse;
+  effect->specular_coeff = specular;
+}
+
+void phong_effect_set_specular_power(PhongEffect* effect, float power)
+{
   effect->specular_power = power;
 }
 
@@ -163,23 +174,24 @@ Color phong_effect_pixel_shader(const PhongEffect* effect, const PhongEffectGSOu
   const float dist = vec4_length(&pos_to_light);
   const Vec4 dir = vec4_normalized(&pos_to_light);
 
-  // Compute diffuse component
-  const float attenuation =
-    1.0f / (effect->quadratic_atten * dist * dist + effect->linear_atten * dist + effect->constant_atten);
-  const Vec3 d = vec3_mul(&effect->diffuse_light, attenuation * fmax(0.0f, vec4_dot(&dir, &normal)));
+  const float attenuation = 1.0f / (effect->quadratic_attenuation * dist * dist + effect->linear_attenuation * dist +
+                                    effect->constant_attenuation);
 
-  // Compute specular component
+  const Vec3 diffuse =
+    vec3_mul(&effect->diffuse_light, effect->diffuse_coeff * attenuation * fmax(0.0f, vec4_dot(&dir, &normal)));
+
   Vec4 r = vec4_mul(&normal, 2 * vec4_dot(&pos_to_light, &normal));
   r = vec4_sub(&r, &pos_to_light);
   r = vec4_normalized(&r);
   Vec4 v = vec4_mul(&in->world_pos, -1.0f);
   v = vec4_normalized(&v);
-  const Vec3 s = vec3_mul(&effect->diffuse_light,
-                          effect->specular_intensity * pow(fmax(0.0f, vec4_dot(&r, &v)), effect->specular_power));
 
-  // Compute total light intensity
-  Vec3 light = vec3_add(&effect->ambient_light, &d);
-  light = vec3_add(&light, &s);
+  const Vec3 specular =
+    vec3_mul(&effect->specular_light,
+             effect->specular_coeff * attenuation * pow(fmax(0.0f, vec4_dot(&r, &v)), effect->specular_power));
+
+  Vec3 light = vec3_add(&effect->ambient_light, &diffuse);
+  light = vec3_add(&light, &specular);
 
   Vec3 color = vec3_hadamard(&effect->material_color, &light);
   color = vec3_saturate(&color);

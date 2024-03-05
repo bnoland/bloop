@@ -39,11 +39,14 @@ typedef struct
   Vec4 light_pos;
   Vec3 ambient_light;
   Vec3 diffuse_light;
+  Vec3 specular_light;
   Vec3 material_color;
-  float quadratic_atten;
-  float linear_atten;
-  float constant_atten;
-  float specular_intensity;
+  float quadratic_attenuation;
+  float linear_attenuation;
+  float constant_attenuation;
+  float ambient_coeff;
+  float diffuse_coeff;
+  float specular_coeff;
   float specular_power;
 } PhongEffect;
 
@@ -53,11 +56,13 @@ void phong_effect_set_world(PhongEffect* effect, const Mat4* world);
 void phong_effect_set_projection(PhongEffect* effect, const Mat4* projection);
 
 void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos);
-void phong_effect_set_diffuse_light(PhongEffect* effect, const Vec3* light);
 void phong_effect_set_ambient_light(PhongEffect* effect, const Vec3* light);
+void phong_effect_set_diffuse_light(PhongEffect* effect, const Vec3* light);
+void phong_effect_set_specular_light(PhongEffect* effect, const Vec3* light);
 void phong_effect_set_material_color(PhongEffect* effect, const Vec3* color);
 void phong_effect_set_attenuation(PhongEffect* effect, float quadratic, float linear, float constant);
-void phong_effect_set_specular(PhongEffect* effect, float intensity, float power);
+void phong_effect_set_light_coefficients(PhongEffect* effect, float ambient, float diffuse, float specular);
+void phong_effect_set_specular_power(PhongEffect* effect, float power);
 
 void phong_effect_vertex_shader(const PhongEffect* effect, const PhongEffectVertex* in, PhongEffectVSOut* out);
 void phong_effect_geometry_shader(const PhongEffect* effect,

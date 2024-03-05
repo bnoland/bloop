@@ -188,9 +188,28 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uv
 #if MESH_VERTEX_HAS_NORMALS
 void MESH_PREFIX(mesh_interpolate_normals)(MESH* mesh)
 {
-  // XXX: Interpolate normals from face normals.
-  // See dis code i wrote:
-  // https://github.com/bnoland/blip/blob/main/src/indexed_triangle_list.hpp
+  for (size_t i = 0; i < mesh->vertices.size; i++) {
+    VERTEX* v = dyn_list_mutable_at(&mesh->vertices, i);
+    v->normal = vec3_make(0.0f, 0.0f, 0.0f);
+  }
+
+  for (size_t i = 0; i < mesh->indices.size / 3; i++) {
+    const size_t* i0 = dyn_list_at(&mesh->indices, 3 * i);
+    const size_t* i1 = dyn_list_at(&mesh->indices, 3 * i + 1);
+    const size_t* i2 = dyn_list_at(&mesh->indices, 3 * i + 2);
+
+    VERTEX* v0 = dyn_list_mutable_at(&mesh->vertices, *i0);
+    VERTEX* v1 = dyn_list_mutable_at(&mesh->vertices, *i1);
+    VERTEX* v2 = dyn_list_mutable_at(&mesh->vertices, *i2);
+
+    const Vec3 u = vec3_sub(&v1->pos, &v0->pos);
+    const Vec3 v = vec3_sub(&v2->pos, &v0->pos);
+    const Vec3 n = vec3_cross(&u, &v);
+
+    v0->normal = vec3_add(&v0->normal, &n);
+    v1->normal = vec3_add(&v1->normal, &n);
+    v2->normal = vec3_add(&v2->normal, &n);
+  }
 }
 #endif
 
