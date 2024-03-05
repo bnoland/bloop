@@ -66,10 +66,9 @@ void phong_effect_set_projection(PhongEffect* effect, const Mat4* projection)
   effect->proj_world = mat4_mul(&effect->projection, &effect->world);
 }
 
-void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos)
+void phong_effect_set_light_pos(PhongEffect* effect, const Vec4* light_pos)
 {
-  const Vec4 pos = vec4_make(light_pos->x, light_pos->y, light_pos->z, 1.0f);
-  effect->light_pos = mat4_vec_mul(&effect->world, &pos);
+  effect->light_pos = *light_pos;
 }
 
 void phong_effect_set_ambient_light(PhongEffect* effect, const Vec3* light)

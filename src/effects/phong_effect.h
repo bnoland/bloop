@@ -55,7 +55,7 @@ PhongEffect phong_effect_make(const Graphics* graphics);
 void phong_effect_set_world(PhongEffect* effect, const Mat4* world);
 void phong_effect_set_projection(PhongEffect* effect, const Mat4* projection);
 
-void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos);
+void phong_effect_set_light_pos(PhongEffect* effect, const Vec4* light_pos);
 void phong_effect_set_ambient_light(PhongEffect* effect, const Vec3* light);
 void phong_effect_set_diffuse_light(PhongEffect* effect, const Vec3* light);
 void phong_effect_set_specular_light(PhongEffect* effect, const Vec3* light);

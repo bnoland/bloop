@@ -22,13 +22,13 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
   const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 0.01f, 10.0f);
   phong_effect_set_projection(&pipeline.effect, &projection);
 
-  const Vec3 light_pos = vec3_make(0.0f, 1.5f, 2.5f);
+  const Vec4 light_pos_base = vec4_make(0.0f, 1.0f, 3.5f, 1.0f);
   const Vec3 ambient_light = vec3_make(0.24725f, 0.2245f, 0.0645f);
   const Vec3 diffuse_light = vec3_make(0.34615f, 0.3143f, 0.0903f);
   const Vec3 specular_light = vec3_make(0.797357f, 0.723991f, 0.208006f);
   const Vec3 material_color = vec3_make(1.0f, 1.0f, 1.0f);
 
-  phong_effect_set_light_pos(&pipeline.effect, &light_pos);
+  phong_effect_set_light_pos(&pipeline.effect, &light_pos_base);
   phong_effect_set_ambient_light(&pipeline.effect, &ambient_light);
   phong_effect_set_diffuse_light(&pipeline.effect, &diffuse_light);
   phong_effect_set_specular_light(&pipeline.effect, &specular_light);
@@ -44,7 +44,9 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
     .depth_buffer = depth_buffer,
     .mesh = mesh,
     .pipeline = pipeline,
-    .camera_pos = vec3_make(0.0f, 1.5f, 6.0f),
+    .light_pos_base = light_pos_base,
+    .light_pos = light_pos_base,
+    .camera_pos = vec3_make(0.0f, 1.0f, 6.0f),
     .camera_angles = vec3_make(0.0f, 0.0f, 0.0f),
     .camera_forward_base = camera_forward_base,
     .camera_left_base = camera_left_base,
@@ -118,8 +120,10 @@ static void teapot_scene_update_camera(TeapotScene* scene)
   world = mat4_mul(&world, &world_rot_y);
   world = mat4_mul(&world, &world_rot_z);
   world = mat4_mul(&world, &world_trans);
-
   phong_effect_set_world(&scene->pipeline.effect, &world);
+
+  scene->light_pos = mat4_vec_mul(&world, &scene->light_pos_base);
+  phong_effect_set_light_pos(&scene->pipeline.effect, &scene->light_pos);
 }
 
 void teapot_scene_draw(TeapotScene* scene)
