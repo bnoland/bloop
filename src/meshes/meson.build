@@ -1,5 +1,5 @@
 sources += files(
-  'default_mesh.c',
   'normal_mesh.c',
+  'position_mesh.c',
   'texture_mesh.c',
 )

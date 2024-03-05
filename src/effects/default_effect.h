@@ -4,13 +4,11 @@
 #include "vector.h"
 #include "matrix.h"
 #include "graphics.h"
+#include "meshes/position_mesh.h"
 
 #include <stddef.h>
 
-typedef struct
-{
-  Vec3 pos;
-} DefaultEffectVertex;
+typedef PositionVertex DefaultEffectVertex;
 
 typedef struct
 {
@@ -32,15 +30,17 @@ DefaultEffectGSOut default_effect_gsout_interpolate(const DefaultEffectGSOut* v,
 
 typedef struct
 {
-  Mat4 world_view;
-  Mat4 projection;
-  Mat4 transform;
   const Graphics* graphics;
+  Mat4 world;
+  Mat4 projection;
+  Mat4 proj_world;
 } DefaultEffect;
 
 DefaultEffect default_effect_make(const Graphics* graphics);
-void default_effect_bind_world_view(DefaultEffect* effect, const Mat4* world_view);
-void default_effect_bind_projection(DefaultEffect* effect, const Mat4* projection);
+
+void default_effect_set_world(DefaultEffect* effect, const Mat4* world);
+void default_effect_set_projection(DefaultEffect* effect, const Mat4* projection);
+
 void default_effect_vertex_shader(const DefaultEffect* effect, const DefaultEffectVertex* in, DefaultEffectVSOut* out);
 void default_effect_geometry_shader(const DefaultEffect* effect,
                                     const DefaultEffectVSOut* in0,

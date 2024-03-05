@@ -1,18 +1,22 @@
 #ifndef MESH_IMPLEMENTATION
 
 #include "dynlist.h"
-#include "effects/default_effect.h"
+#include "vector.h"
 
 #include <stdbool.h>
 
 #ifndef MESH_TYPE_PREFIX
-#define MESH_TYPE_PREFIX Default
+typedef struct
+{
+  Vec3 pos;
+} PositionVertex;
+#define MESH_TYPE_PREFIX Position
 #endif
 #ifndef MESH_FUNCTION_PREFIX
-#define MESH_FUNCTION_PREFIX default_
+#define MESH_FUNCTION_PREFIX position_
 #endif
 #ifndef MESH_VERTEX_TYPE
-#define MESH_VERTEX_TYPE DefaultEffectVertex
+#define MESH_VERTEX_TYPE PositionVertex
 #endif
 #ifndef MESH_VERTEX_HAS_UVS
 #define MESH_VERTEX_HAS_UVS false

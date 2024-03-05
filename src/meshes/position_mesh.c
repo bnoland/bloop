@@ -1,4 +1,4 @@
-#include "default_mesh.h"
+#include "position_mesh.h"
 
 #define MESH_IMPLEMENTATION
 #include "mesh.inc"

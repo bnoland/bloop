@@ -41,26 +41,26 @@ DefaultEffect default_effect_make(const Graphics* graphics)
 {
   return (DefaultEffect){
     .graphics = graphics,
-    .transform = mat4_identity(),
+    .proj_world = mat4_identity(),
   };
 }
 
-void default_effect_bind_world_view(DefaultEffect* effect, const Mat4* world_view)
+void default_effect_set_world(DefaultEffect* effect, const Mat4* world)
 {
-  effect->world_view = *world_view;
-  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
+  effect->world = *world;
+  effect->proj_world = mat4_mul(&effect->projection, &effect->world);
 }
 
-void default_effect_bind_projection(DefaultEffect* effect, const Mat4* projection)
+void default_effect_set_projection(DefaultEffect* effect, const Mat4* projection)
 {
   effect->projection = *projection;
-  effect->transform = mat4_mul(&effect->projection, &effect->world_view);
+  effect->proj_world = mat4_mul(&effect->projection, &effect->world);
 }
 
 void default_effect_vertex_shader(const DefaultEffect* effect, const DefaultEffectVertex* in, DefaultEffectVSOut* out)
 {
   const Vec4 in_pos = vec4_make(in->pos.x, in->pos.y, in->pos.z, 1.0f);
-  out->pos = mat4_vec_mul(&effect->transform, &in_pos);
+  out->pos = mat4_vec_mul(&effect->proj_world, &in_pos);
 }
 
 void default_effect_geometry_shader(const DefaultEffect* effect,

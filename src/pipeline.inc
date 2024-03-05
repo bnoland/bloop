@@ -2,7 +2,8 @@
 
 #include "graphics.h"
 #include "depth_buffer.h"
-#include "meshes/default_mesh.h"
+#include "effects/default_effect.h"
+#include "meshes/position_mesh.h"
 
 #include <tgmath.h>
 
@@ -13,7 +14,7 @@
 #define PIPELINE_TYPE_PREFIX default_
 #endif
 #ifndef PIPELINE_MESH_TYPE
-#define PIPELINE_MESH_TYPE DefaultMesh
+#define PIPELINE_MESH_TYPE PositionMesh
 #endif
 #ifndef PIPELINE_EFFECT_TYPE
 #define PIPELINE_EFFECT_TYPE DefaultEffect

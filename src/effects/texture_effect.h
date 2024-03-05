@@ -33,17 +33,19 @@ TextureEffectGSOut texture_effect_gsout_interpolate(const TextureEffectGSOut* v,
 
 typedef struct
 {
-  Mat4 world_view;
-  Mat4 projection;
-  Mat4 transform;
   const Texture* texture;
   const Graphics* graphics;
+  Mat4 world;
+  Mat4 projection;
+  Mat4 proj_world;
 } TextureEffect;
 
 TextureEffect texture_effect_make(const Graphics* graphics);
-void texture_effect_bind_world_view(TextureEffect* effect, const Mat4* world_view);
-void texture_effect_bind_projection(TextureEffect* effect, const Mat4* projection);
-void texture_effect_bind_texture(TextureEffect* effect, const Texture* texture);
+
+void texture_effect_set_world(TextureEffect* effect, const Mat4* world);
+void texture_effect_set_projection(TextureEffect* effect, const Mat4* projection);
+void texture_effect_set_texture(TextureEffect* effect, const Texture* texture);
+
 void texture_effect_vertex_shader(const TextureEffect* effect, const TextureEffectVertex* in, TextureEffectVSOut* out);
 void texture_effect_geometry_shader(const TextureEffect* effect,
                                     const TextureEffectVSOut* in0,
