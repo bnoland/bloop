@@ -47,6 +47,9 @@ void MESH_PREFIX(mesh_load_from_arrays)(MESH* mesh,
                                         const size_t indices[],
                                         size_t num_indices);
 bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uvs, bool load_normals);
+#if MESH_VERTEX_HAS_NORMALS
+void MESH_PREFIX(mesh_interpolate_normals)(MESH* mesh);
+#endif
 
 #else
 
@@ -177,6 +180,15 @@ bool MESH_PREFIX(mesh_load_from_file)(MESH* mesh, const char* path, bool load_uv
   model_destroy(&model);
   return true;
 }
+
+#if MESH_VERTEX_HAS_NORMALS
+void MESH_PREFIX(mesh_interpolate_normals)(MESH* mesh)
+{
+  // XXX: Interpolate normals from face normals.
+  // See dis code i wrote:
+  // https://github.com/bnoland/blip/blob/main/src/indexed_triangle_list.hpp
+}
+#endif
 
 static bool face_elements_equal(const void* a, const void* b)
 {

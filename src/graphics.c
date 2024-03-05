@@ -45,7 +45,6 @@ void graphics_set_pixel(const Graphics* graphics, int x, int y, Color color)
 {
   assert(x >= 0 && x < graphics->screen_width);
   assert(y >= 0 && y < graphics->screen_height);
-  assert(graphics->pixel_buffer != NULL);
 
   graphics->pixel_buffer[x + y * graphics->screen_width] = color;
 }

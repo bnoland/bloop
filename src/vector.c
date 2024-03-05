@@ -1,10 +1,26 @@
 #include "vector.h"
 
+#include <tgmath.h>
+
 Vec2 vec2_make(float x, float y)
 {
   return (Vec2){
     .x = x,
     .y = y,
+  };
+}
+
+float vec2_length(const Vec2* v)
+{
+  return sqrt(v->x * v->x + v->y * v->y);
+}
+
+Vec2 vec2_normalized(const Vec2* v)
+{
+  const float length = vec2_length(v);
+  return (Vec2){
+    .x = v->x / length,
+    .y = v->y / length,
   };
 }
 
@@ -59,6 +75,21 @@ Vec3 vec3_make(float x, float y, float z)
     .x = x,
     .y = y,
     .z = z,
+  };
+}
+
+float vec3_length(const Vec3* v)
+{
+  return sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+}
+
+Vec3 vec3_normalized(const Vec3* v)
+{
+  const float length = vec3_length(v);
+  return (Vec3){
+    .x = v->x / length,
+    .y = v->y / length,
+    .z = v->z / length,
   };
 }
 
@@ -121,6 +152,24 @@ Vec3 vec3_cross(const Vec3* v, const Vec3* w)
   };
 }
 
+Vec3 vec3_hadamard(const Vec3* v, const Vec3* w)
+{
+  return (Vec3){
+    .x = v->x * w->x,
+    .y = v->y * w->y,
+    .z = v->z * w->z,
+  };
+}
+
+Vec3 vec3_saturate(const Vec3* v)
+{
+  return (Vec3){
+    .x = fmin(1.0f, fmax(0.0f, v->x)),
+    .y = fmin(1.0f, fmax(0.0f, v->y)),
+    .z = fmin(1.0f, fmax(0.0f, v->z)),
+  };
+}
+
 Vec4 vec4_make(float x, float y, float z, float w)
 {
   return (Vec4){
@@ -178,6 +227,22 @@ Vec4 vec4_interpolate(const Vec4* v, const Vec4* w, float alpha)
     .y = (1.0f - alpha) * v->y + alpha * w->y,
     .z = (1.0f - alpha) * v->z + alpha * w->z,
     .w = (1.0f - alpha) * v->w + alpha * w->w,
+  };
+}
+
+float vec4_length(const Vec4* v)
+{
+  return sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+}
+
+Vec4 vec4_normalized(const Vec4* v)
+{
+  const float length = vec4_length(v);
+  return (Vec4){
+    .x = v->x / length,
+    .y = v->y / length,
+    .z = v->z / length,
+    .w = 1.0f,
   };
 }
 

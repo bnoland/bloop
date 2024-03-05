@@ -79,13 +79,6 @@ void default_effect_geometry_shader(const DefaultEffect* effect,
   out2->pos = in2->pos;
 }
 
-Color default_effect_pixel_shader(const DefaultEffect* effect, const DefaultEffectGSOut* in)
-{
-  (void)effect;
-  (void)in;
-  return 0xffffffff;
-}
-
 DefaultEffectGSOut default_effect_screen_transform(const DefaultEffect* effect, const DefaultEffectGSOut* in)
 {
   DefaultEffectGSOut out;
@@ -102,4 +95,11 @@ DefaultEffectGSOut default_effect_screen_transform(const DefaultEffect* effect, 
   out.pos.y = (screen_height / 2.0f) * (-out.pos.y + 1.0f);
 
   return out;
+}
+
+Color default_effect_pixel_shader(const DefaultEffect* effect, const DefaultEffectGSOut* in)
+{
+  (void)effect;
+  (void)in;
+  return 0xffffffff;
 }

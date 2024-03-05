@@ -45,8 +45,6 @@ Color texture_at(const Texture* texture, int x, int y)
 {
   assert(x >= 0 && x < texture->width);
   assert(y >= 0 && y < texture->height);
-  assert(texture->data != NULL);
-
   return texture->data[x + y * texture->width];
 }
 
@@ -54,7 +52,5 @@ Color texture_uv_at(const Texture* texture, float u, float v)
 {
   assert(u >= 0.0f && u <= 1.0f);
   assert(v >= 0.0f && v <= 1.0f);
-  assert(texture->data != NULL);
-
   return texture_at(texture, u * (texture->width - 1), v * (texture->height - 1));
 }

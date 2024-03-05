@@ -12,14 +12,27 @@ static void teapot_scene_update_camera(TeapotScene* scene);
 TeapotScene teapot_scene_make(const Graphics* graphics)
 {
   DepthBuffer* depth_buffer = depth_buffer_make(graphics->screen_width, graphics->screen_height);
+
+  NormalMesh mesh = normal_mesh_make();
+  normal_mesh_load_from_file(&mesh, "resources/suzanne.obj", false, true);
+  normal_mesh_interpolate_normals(&mesh);
+
   PhongPipeline pipeline = phong_pipeline_make(graphics, depth_buffer);
 
-  // XXX: Will probably want to compute normals from faces + interpolate.
-  NormalMesh mesh = normal_mesh_make();
-  normal_mesh_load_from_file(&mesh, "resources/teapot.obj", false, false);
-
   const Mat4 projection = mat4_projection(90.0f, 4.0f / 3.0f, 0.01f, 10.0f);
-  phong_effect_bind_projection(&pipeline.effect, &projection);
+  phong_effect_set_projection(&pipeline.effect, &projection);
+
+  const Vec3 light_pos = vec3_make(0.0f, 0.0f, 1.5f);
+  const Vec3 diffuse_light = vec3_make(1.0f, 1.0f, 1.0f);
+  const Vec3 ambient_light = vec3_make(0.1f, 0.1f, 0.1f);
+  const Vec3 material_color = vec3_make(0.8f, 0.85f, 1.0f);
+
+  phong_effect_set_light_pos(&pipeline.effect, &light_pos);
+  phong_effect_set_ambient_light(&pipeline.effect, &ambient_light);
+  phong_effect_set_diffuse_light(&pipeline.effect, &diffuse_light);
+  phong_effect_set_material_color(&pipeline.effect, &material_color);
+  phong_effect_set_attenuation(&pipeline.effect, 2.619f, 1.0f, 0.382f);
+  phong_effect_set_specular(&pipeline.effect, 0.6f, 60.0f);
 
   const Vec3 camera_forward_base = vec3_make(0.0f, 0.0f, -1.0f);
   const Vec3 camera_left_base = vec3_make(-1.0f, 0.0f, 0.0f);
@@ -28,7 +41,7 @@ TeapotScene teapot_scene_make(const Graphics* graphics)
     .depth_buffer = depth_buffer,
     .mesh = mesh,
     .pipeline = pipeline,
-    .camera_pos = vec3_make(0.0f, 0.0f, 8.0f),
+    .camera_pos = vec3_make(0.0f, 0.0f, 3.0f),
     .camera_angles = vec3_make(0.0f, 0.0f, 0.0f),
     .camera_forward_base = camera_forward_base,
     .camera_left_base = camera_left_base,
@@ -51,8 +64,8 @@ void teapot_scene_update(TeapotScene* scene, float dt)
 {
   const uint8_t* key_states = SDL_GetKeyboardState(NULL);
 
-  const double angular_speed = 3.0f;
-  const double speed = 3.0f;
+  const double angular_speed = 2.5f;
+  const double speed = 3.5f;
 
   bool did_update = false;
 
@@ -103,7 +116,7 @@ static void teapot_scene_update_camera(TeapotScene* scene)
   world_view = mat4_mul(&world_view, &world_rot_z);
   world_view = mat4_mul(&world_view, &world_trans);
 
-  phong_effect_bind_world_view(&scene->pipeline.effect, &world_view);
+  phong_effect_set_world_view(&scene->pipeline.effect, &world_view);
 }
 
 void teapot_scene_draw(TeapotScene* scene)

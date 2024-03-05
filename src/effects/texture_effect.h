@@ -53,7 +53,7 @@ void texture_effect_geometry_shader(const TextureEffect* effect,
                                     TextureEffectGSOut* out1,
                                     TextureEffectGSOut* out2,
                                     size_t triangle_index);
-Color texture_effect_pixel_shader(const TextureEffect* effect, const TextureEffectGSOut* in);
 TextureEffectGSOut texture_effect_screen_transform(const TextureEffect* effect, const TextureEffectGSOut* in);
+Color texture_effect_pixel_shader(const TextureEffect* effect, const TextureEffectGSOut* in);
 
 #endif

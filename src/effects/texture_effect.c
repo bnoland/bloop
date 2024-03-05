@@ -96,14 +96,6 @@ void texture_effect_geometry_shader(const TextureEffect* effect,
   out2->uv = in2->uv;
 }
 
-Color texture_effect_pixel_shader(const TextureEffect* effect, const TextureEffectGSOut* in)
-{
-  const float z = 1.0f / in->pos.w;
-  const float u = in->uv.x * z;
-  const float v = in->uv.y * z;
-  return texture_uv_at(effect->texture, u, v);
-}
-
 TextureEffectGSOut texture_effect_screen_transform(const TextureEffect* effect, const TextureEffectGSOut* in)
 {
   TextureEffectGSOut out;
@@ -123,4 +115,12 @@ TextureEffectGSOut texture_effect_screen_transform(const TextureEffect* effect, 
   out.uv.y = in->uv.y * out.pos.w;
 
   return out;
+}
+
+Color texture_effect_pixel_shader(const TextureEffect* effect, const TextureEffectGSOut* in)
+{
+  const float z = 1.0f / in->pos.w;
+  const float u = in->uv.x * z;
+  const float v = in->uv.y * z;
+  return texture_uv_at(effect->texture, u, v);
 }

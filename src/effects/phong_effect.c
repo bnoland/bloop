@@ -1,9 +1,12 @@
 #include "phong_effect.h"
 
+#include <tgmath.h>
+
 PhongEffectGSOut phong_effect_gsout_add(const PhongEffectGSOut* v, const PhongEffectGSOut* w)
 {
   return (PhongEffectGSOut){
     .pos = vec4_add(&v->pos, &w->pos),
+    .world_pos = vec4_add(&v->world_pos, &w->world_pos),
     .normal = vec4_add(&v->normal, &w->normal),
   };
 }
@@ -12,6 +15,7 @@ PhongEffectGSOut phong_effect_gsout_sub(const PhongEffectGSOut* v, const PhongEf
 {
   return (PhongEffectGSOut){
     .pos = vec4_sub(&v->pos, &w->pos),
+    .world_pos = vec4_sub(&v->world_pos, &w->world_pos),
     .normal = vec4_sub(&v->normal, &w->normal),
   };
 }
@@ -20,6 +24,7 @@ PhongEffectGSOut phong_effect_gsout_mul(const PhongEffectGSOut* v, float c)
 {
   return (PhongEffectGSOut){
     .pos = vec4_mul(&v->pos, c),
+    .world_pos = vec4_mul(&v->world_pos, c),
     .normal = vec4_mul(&v->normal, c),
   };
 }
@@ -28,6 +33,7 @@ PhongEffectGSOut phong_effect_gsout_mul_add(const PhongEffectGSOut* v, const Pho
 {
   return (PhongEffectGSOut){
     .pos = vec4_mul_add(&v->pos, &w->pos, c),
+    .world_pos = vec4_mul_add(&v->world_pos, &w->world_pos, c),
     .normal = vec4_mul_add(&v->normal, &w->normal, c),
   };
 }
@@ -36,6 +42,7 @@ PhongEffectGSOut phong_effect_gsout_interpolate(const PhongEffectGSOut* v, const
 {
   return (PhongEffectGSOut){
     .pos = vec4_interpolate(&v->pos, &w->pos, alpha),
+    .world_pos = vec4_interpolate(&v->world_pos, &w->world_pos, alpha),
     .normal = vec4_interpolate(&v->normal, &w->normal, alpha),
   };
 }
@@ -44,28 +51,63 @@ PhongEffect phong_effect_make(const Graphics* graphics)
 {
   return (PhongEffect){
     .graphics = graphics,
-    .transform = mat4_identity(),
   };
 }
 
-void phong_effect_bind_world_view(PhongEffect* effect, const Mat4* world_view)
+void phong_effect_set_world_view(PhongEffect* effect, const Mat4* world_view)
 {
   effect->world_view = *world_view;
   effect->transform = mat4_mul(&effect->projection, &effect->world_view);
 }
 
-void phong_effect_bind_projection(PhongEffect* effect, const Mat4* projection)
+void phong_effect_set_projection(PhongEffect* effect, const Mat4* projection)
 {
   effect->projection = *projection;
   effect->transform = mat4_mul(&effect->projection, &effect->world_view);
 }
 
+void phong_effect_set_light_pos(PhongEffect* effect, const Vec3* light_pos)
+{
+  const Vec4 pos = vec4_make(light_pos->x, light_pos->y, light_pos->z, 1.0f);
+  effect->light_pos = mat4_vec_mul(&effect->world_view, &pos);
+}
+
+void phong_effect_set_diffuse_light(PhongEffect* effect, const Vec3* light)
+{
+  effect->diffuse_light = *light;
+}
+
+void phong_effect_set_ambient_light(PhongEffect* effect, const Vec3* light)
+{
+  effect->ambient_light = *light;
+}
+
+void phong_effect_set_material_color(PhongEffect* effect, const Vec3* color)
+{
+  effect->material_color = *color;
+}
+
+void phong_effect_set_attenuation(PhongEffect* effect, float quadratic, float linear, float constant)
+{
+  effect->quadratic_atten = quadratic;
+  effect->linear_atten = linear;
+  effect->constant_atten = constant;
+}
+
+void phong_effect_set_specular(PhongEffect* effect, float intensity, float power)
+{
+  effect->specular_intensity = intensity;
+  effect->specular_power = power;
+}
+
 void phong_effect_vertex_shader(const PhongEffect* effect, const PhongEffectVertex* in, PhongEffectVSOut* out)
 {
   const Vec4 in_pos = vec4_make(in->pos.x, in->pos.y, in->pos.z, 1.0f);
-  const Vec4 in_normal = vec4_make(in->normal.x, in->normal.y, in->normal.z, 1.0f);
+  const Vec4 in_normal = vec4_make(in->normal.x, in->normal.y, in->normal.z, 0.0f);
+
   out->pos = mat4_vec_mul(&effect->transform, &in_pos);
-  out->normal = mat4_vec_mul(&effect->transform, &in_normal);
+  out->world_pos = mat4_vec_mul(&effect->world_view, &in_pos);
+  out->normal = mat4_vec_mul(&effect->world_view, &in_normal);
 }
 
 void phong_effect_geometry_shader(const PhongEffect* effect,
@@ -79,17 +121,18 @@ void phong_effect_geometry_shader(const PhongEffect* effect,
 {
   (void)effect;
   (void)triangle_index;
+
   out0->pos = in0->pos;
   out1->pos = in1->pos;
   out2->pos = in2->pos;
-}
 
-Color phong_effect_pixel_shader(const PhongEffect* effect, const PhongEffectGSOut* in)
-{
-  // XXX: Implement.
-  (void)effect;
-  (void)in;
-  return 0xffffffff;
+  out0->world_pos = in0->world_pos;
+  out1->world_pos = in1->world_pos;
+  out2->world_pos = in2->world_pos;
+
+  out0->normal = in0->normal;
+  out1->normal = in1->normal;
+  out2->normal = in2->normal;
 }
 
 PhongEffectGSOut phong_effect_screen_transform(const PhongEffect* effect, const PhongEffectGSOut* in)
@@ -99,7 +142,7 @@ PhongEffectGSOut phong_effect_screen_transform(const PhongEffect* effect, const 
   out.pos.x = in->pos.x / in->pos.w;
   out.pos.y = in->pos.y / in->pos.w;
   out.pos.z = in->pos.z / in->pos.w;
-  out.pos.w = -1.0f / in->pos.w;
+  out.pos.w = 1.0f;
 
   const size_t screen_width = effect->graphics->screen_width;
   const size_t screen_height = effect->graphics->screen_height;
@@ -107,7 +150,40 @@ PhongEffectGSOut phong_effect_screen_transform(const PhongEffect* effect, const 
   out.pos.x = (screen_width / 2.0f) * (out.pos.x + 1.0f);
   out.pos.y = (screen_height / 2.0f) * (-out.pos.y + 1.0f);
 
-  out.normal = vec4_mul(&in->normal, out.pos.w);
+  out.normal = in->normal;
+  out.world_pos = in->world_pos;
 
   return out;
+}
+
+Color phong_effect_pixel_shader(const PhongEffect* effect, const PhongEffectGSOut* in)
+{
+  const Vec4 normal = vec4_normalized(&in->normal);
+  const Vec4 pos_to_light = vec4_sub(&effect->light_pos, &in->world_pos);
+  const float dist = vec4_length(&pos_to_light);
+  const Vec4 dir = vec4_normalized(&pos_to_light);
+
+  // Compute diffuse component
+  const float attenuation =
+    1.0f / (effect->quadratic_atten * dist * dist + effect->linear_atten * dist + effect->constant_atten);
+  const Vec3 d = vec3_mul(&effect->diffuse_light, attenuation * fmax(0.0f, vec4_dot(&dir, &normal)));
+
+  // Compute specular component
+  Vec4 r = vec4_mul(&normal, 2 * vec4_dot(&pos_to_light, &normal));
+  r = vec4_sub(&r, &pos_to_light);
+  r = vec4_normalized(&r);
+  Vec4 v = vec4_mul(&in->world_pos, -1.0f);
+  v = vec4_normalized(&v);
+  const Vec3 s = vec3_mul(&effect->diffuse_light,
+                          effect->specular_intensity * pow(fmax(0.0f, vec4_dot(&r, &v)), effect->specular_power));
+
+  // Compute total light intensity
+  Vec3 light = vec3_add(&effect->ambient_light, &d);
+  light = vec3_add(&light, &s);
+
+  Vec3 color = vec3_hadamard(&effect->material_color, &light);
+  color = vec3_saturate(&color);
+  color = vec3_mul(&color, 255.0f);
+
+  return ((Color)color.x << 24) | ((Color)color.y << 16) | ((Color)color.z << 8) | 255;
 }

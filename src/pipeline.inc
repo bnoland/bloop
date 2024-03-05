@@ -342,7 +342,7 @@ static void pipeline_draw_triangle_flat(const PIPELINE* pipeline,
 
     for (int x = x_start; x < x_end; x++) {
       const GS_OUT scan = GS_OUT_INTERPOLATE(&left, &right, (x + 0.5f - left.pos.x) / width);
-      if (depth_buffer_test_and_set(pipeline->depth_buffer, x, y, scan.pos.z)) {
+      if (depth_buffer_test_and_set(pipeline->depth_buffer, x, y, -scan.pos.z)) {
         const Color color = PIXEL_SHADER(&pipeline->effect, &scan);
         graphics_set_pixel(pipeline->graphics, x, y, color);
       }

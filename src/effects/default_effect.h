@@ -50,7 +50,7 @@ void default_effect_geometry_shader(const DefaultEffect* effect,
                                     DefaultEffectGSOut* out1,
                                     DefaultEffectGSOut* out2,
                                     size_t triangle_index);
-Color default_effect_pixel_shader(const DefaultEffect* effect, const DefaultEffectGSOut* in);
 DefaultEffectGSOut default_effect_screen_transform(const DefaultEffect* effect, const DefaultEffectGSOut* in);
+Color default_effect_pixel_shader(const DefaultEffect* effect, const DefaultEffectGSOut* in);
 
 #endif
