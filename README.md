@@ -4,4 +4,4 @@ A simple software renderer written in C. Provides programmable vertex, geometry,
 
 A scene rendering the Utah teapot (with interpolated normals, hence the slight creasing in the model):
 
-![Utah teapot scene](images/teapot.png)
+![Utah teapot scene](screenshots/teapot.png)
